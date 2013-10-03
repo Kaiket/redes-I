@@ -1,0 +1,7 @@
+
+Cuando se ejecuta el programa sin argumentos se lee de eth0 y se guarda el output en una archivo por defecto "output.pcap"
+
+Se puede invocar luego al programa con un argumento (por ejemplo, este mismo archivo generado) para comprobar que efectivamente es
+capaz de leer trazas de un archivo.
+
+En la captura de pantalla se puede comprobar que no hay diferencias con los paquetes leidos con wireshark
