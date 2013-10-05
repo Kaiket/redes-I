@@ -54,26 +54,26 @@ int main(int argc, char **argv)
 	
 	if(signal(SIGINT,handleSignal)==SIG_ERR){
 		printf("Error: Fallo al capturar la senal SIGINT.\n");
-		exit(ERROR);
+		exit(EXIT_FAILURE);
 	}
 
 	if(argc!=2){
 		printf("Ejecucion: %s /ruta/captura_pcap\n",argv[0]);
-		exit(ERROR);
+		exit(EXIT_FAILURE);
 	}
 
    	if ( (descr = pcap_open_offline(argv[1], errbuf)) == NULL){
 		printf("Error: pcap_open_offline(): File: %s, %s %s %d.\n", argv[1], errbuf,__FILE__,__LINE__);
-		exit(ERROR);
+		exit(EXIT_FAILURE);
 	}
 
 	if ( (paquete = (u_int8_t*) pcap_next(descr,&cabecera)) ==NULL){
 			printf("Error al capturar al capturar trafico; %s %d.\n",__FILE__, __LINE__);
-			exit(ERROR);
+			exit(EXIT_FAILURE);
 	}else{
 		if( (retorno=analizarPaquete(paquete, &cabecera,cont))==ERROR){
 			printf("Error al analizar el primer paquete; %s %d.\n",__FILE__, __LINE__);
-			exit(ERROR);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -82,14 +82,14 @@ int main(int argc, char **argv)
 
 		if( (retorno=analizarPaquete(paquete, &cabecera,cont)) ==ERROR){
 			printf("Error al analizar el paquete %lu; %s %d.\n",__FILE__, __LINE__);
-			exit(ERROR);
+			exit(EXIT_FAILURE);
 		}
 	}
 
 	printf("No hay mas paquetes (%lu).\n\n",cont, __FILE__, __LINE__);
 	pcap_close(descr);
 
-	return OK;
+	return EXIT_SUCCESS;
 }
 
 u_int8_t analizarPaquete(u_int8_t* paquete,struct pcap_pkthdr* cabecera,u_int64_t cont){
