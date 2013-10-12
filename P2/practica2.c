@@ -32,24 +32,24 @@
 /* Macros */
 #define OK 0
 #define ERROR 1
-#define N_BYTES 10
+#define N_BYTES 10 /*No se cuanto hay que capturar todavia*/
 
 /**/
 pcap_t* descr;
 u_int64_t cont = 1;
 
 void handleSignal(int nsignal) {
-    printf("Control C pulsado (%lu)\n", cont);
+    printf("Control+c pulsado (%lu)\n", cont);
     pcap_close(descr);
-    exit(OK);
+    exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char **argv) {
 
-    char errbuf[PCAP_ERRBUF_SIZE];
-    u_int8_t* paquete;
-    struct pcap_pkthdr cabecera;
-    u_int8_t retorno;
+    u_int8_t retorno;                   /*Retorno de analizarPaquete*/
+    u_int8_t* paquete;                  /*Inicio del paquete a analizar*/
+    struct pcap_pkthdr cabecera;        /*Cabecera del paquete*/
+    char errbuf[PCAP_ERRBUF_SIZE];      /*Cadena de error, en su caso*/
 
     /*Captura de la sena SIGINT*/
     if (signal(SIGINT, handleSignal) == SIG_ERR) {
@@ -57,6 +57,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
+    /**Captura de interfaz / Apertura de fichero pcap**/
     /*Si no se reciben argumentos, se captura eth0*/
     if (argc == 1) {
         if ((descr = pcap_open_live("eth0", N_BYTES, 0, 0, errbuf)) == NULL) {
@@ -71,14 +72,14 @@ int main(int argc, char **argv) {
         }
     }
 
-
-    /*Lectura del paquete*/
+    /**Lectura de paquetes**/
     if ((paquete = (u_int8_t*) pcap_next(descr, &cabecera)) == NULL) {
         printf("Error al capturar trafico; %s %d.\n", __FILE__, __LINE__);
         exit(EXIT_FAILURE);
     }
 
     while (paquete) {
+        /*Analisis del paquete*/
         if ((retorno = analizarPaquete(paquete, &cabecera, cont)) == ERROR) {
             printf("Error al analizar el paquete %lu; %s %d.\n", __FILE__, __LINE__);
             exit(EXIT_FAILURE);
