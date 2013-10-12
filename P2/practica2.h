@@ -1,8 +1,7 @@
 /***************************************************************************
  * Autores: Enrique Cabrerizo Fernández, Guillermo Ruiz Álvarez
- * Archivo: practica1.c
- * Compilar: gcc -o practica1 practica1.c -lpcap
- ***************************************************************************/
+ * Archivo: practica2.h
+ ****************************************************************************/
 
 #ifndef __PRACTICA2_H
 #define __PRACTICA2_H
@@ -14,7 +13,7 @@
  * Devuelve: 0 si no han habido errores.
  *	     1 si se le pasan argumentos invalidos (e.g punteros a NULL).
  */
-u_int8_t analizarPaquete(u_int8_t*,struct pcap_pkthdr*,u_int64_t);
+u_int8_t analizarPaquete(u_int8_t*, struct pcap_pkthdr*, u_int64_t);
 
 
 
