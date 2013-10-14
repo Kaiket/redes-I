@@ -25,8 +25,12 @@
 #define ETH_FRAME_MAX 1514   /* Tamano maximo trama ethernet (sin CRC)   */
 #define ETH_FRAME_MIN 60     /* Tamano minimo trama ethernet (sin CRC)   */
                              /*                                          */
-#define ETH_IPTYPE   0x0800  /* Tipo de ethernet correspondiente a       */
+#define ETH_IPTYPE    0x0800 /* Tipo de ethernet correspondiente a       */
                              /* protocolo IP                             */
+#define IP_HLEN       24     /* Tamano de cabecera ip                    */
+                             /*                                          */
+#define PROTOCOL_TCP  6      /* Protocolo TCP                            */
+#define PROTOCOL_UDP  17     /* Protocolo UDP                            */
 /*************************************************************************/
 
 /********Tamano maximo y minimo de los datos de una trama ethernet********/
@@ -61,6 +65,16 @@ struct __attribute__((__packed__)) struct_ip {
     u_int8_t relleno;
 };
 
+struct __attribute__((__packed__)) struct_tcp{
+    
+};
+
+struct __attribute__((__packed__)) struct_udp{
+    
+};
+
+
+
 
 /*
  * Analiza un paquete imprimiendo en el standard output la informacion
@@ -89,6 +103,24 @@ struct_ethernet leerEthernet(u_int8_t* paquete);
  * Devuelve: Estructura con la informacion de la cabecera IP.
  */
 struct_ip leerIP(u_int8_t* cabeceraIP);
+
+
+/*
+ * Lee la cabecera TCP de un paquete.
+ * Modifica el puntero recibido colocandolo al inicio de la siguiente cabecera.
+ * Recibe: Puntero al inicio de la cabecera TCP del paquete.
+ * Devuelve: Estructura con la informacion de la cabecera TCP.
+ */
+struct_ip leerTCP(u_int8_t* cabeceraTCP);
+
+
+/*
+ * Lee la cabecera UDP de un paquete.
+ * Modifica el puntero recibido colocandolo al inicio de la siguiente cabecera.
+ * Recibe: Puntero al inicio de la cabecera UDP del paquete.
+ * Devuelve: Estructura con la informacion de la cabecera UDP.
+ */
+struct_ip leerUDP(u_int8_t* cabeceraUDP);
 
 
 /*

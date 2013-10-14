@@ -61,11 +61,52 @@ int main(int argc, char **argv) {
 
 u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int64_t cont) {
     
+    struct struct_ethernet se;
+    struct struct_ip si;
+    struct struct_tcp st;
+    struct struct_udp su;
+    
     if(!paquete || !cabecera || cont < 0){
         return ERROR;
     }
     
+    se = leerEthernet(paquete);
+    /*Descarte del trafico no ip*/
+    if(se.tipoEth != ETH_IPTYPE){
+        return OK;
+    }
+    
+    si = leerIP(paquete);
+    /*Distincion TCP o UDP*/
+    if (si.protocolo == PROTOCOL_TCP){
+        st = leerTCP(paquete);
+    } else if (si.protocolo == PROTOCOL_UDP){
+        su = leerUDP(paquete);
+    } else{
+        return OK;      /*Se descarta el trafico no TCP o UDP*/
+    }
+    
+    /*Aqui irian las llamadas a funciones de impresion de datos.*/   
 }
+
+
+struct_ethernet leerEthernet(u_int8_t* paquete){
+    struct struct_ethernet se;
+    memcpy(&se, paquete, ETH_HLEN);
+    paquete += ETH_HLEN;
+    return se;
+}
+
+struct_ip leerIP(u_int8_t* cabeceraIP){
+    struct struct_ip si;
+    memcpy(&si, cabeceraIP, IP_HLEN);
+    cabeceraIP += IP_HLEN;
+    return si;
+   
+}
+
+
+
 
 void handleSignal(int nsignal) {
     printf("Control+C pulsado (%lu)\n", cont);
