@@ -66,11 +66,24 @@ struct __attribute__((__packed__)) struct_ip {
 };
 
 struct __attribute__((__packed__)) struct_tcp{
-    
+    u_int16_t puertoOrigen;
+    u_int16_t puertoDestino;
+    u_int32_t secuencia;
+    u_int32_t recibo;
+    u_int8_t posicionDatos;
+    u_int8_t flagsControl;
+    u_int16_t ventana;
+    u_int16_t sumaControl;
+    u_int16_t punteroUrgente;
+    u_int8_t opciones[3];
+    u_int8_t relleno;
+    u_int32_t datos;
 };
 
 struct __attribute__((__packed__)) struct_udp{
-    
+    u_int16_t puertoOrigen;
+    u_int16_t puertoDestino;
+    u_int16_t longitud;    
 };
 
 
