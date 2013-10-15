@@ -27,7 +27,9 @@
                              /*                                          */
 #define ETH_IPTYPE    0x0800 /* Tipo de ethernet correspondiente a       */
                              /* protocolo IP                             */
-#define IP_HLEN       24     /* Tamano de cabecera ip                    */
+#define IP_HLEN       sizeof(struct_ip)  /* Tamano de cabecera ip        */
+#define TCP_HLEN      sizeof(struct_tcp) /*Tamano cabecera TCP           */
+#define UDP_HLEN      sizeof(struct_udp) /*Tamano cabecera UDP           */
                              /*                                          */
 #define PROTOCOL_TCP  6      /* Protocolo TCP                            */
 #define PROTOCOL_UDP  17     /* Protocolo UDP                            */
@@ -44,12 +46,20 @@
 #define N_BYTES 70 /*Esto hay que calcularlo.*/
 
 /*Estructuras*/
+
+/*
+ * Estructura para la cabecera Ethernet
+ */
 struct __attribute__((__packed__)) struct_ethernet {
     u_int8_t destino[ETH_ALEN];
     u_int8_t origen[ETH_ALEN];
     u_int16_t tipoEth;
-};
+} struct_ethernet;
 
+/*
+ * Estructura para la cabecera IP.
+ * Solo incluye los campos obligatorios del protocolo, no incluye las opciones ni el relleno final.
+ */
 struct __attribute__((__packed__)) struct_ip {
     u_int8_t version_IHL;
     u_int8_t tipoServicio;
@@ -61,10 +71,11 @@ struct __attribute__((__packed__)) struct_ip {
     u_int16_t sumaControlCabecera;
     u_int32_t destino;
     u_int32_t origen;
-    u_int8_t opciones[3];
-    u_int8_t relleno;
-};
+} struct_ip;
 
+/*
+ * Estructura para la cabecera TCP.
+ */
 struct __attribute__((__packed__)) struct_tcp{
     u_int16_t puertoOrigen;
     u_int16_t puertoDestino;
@@ -78,13 +89,17 @@ struct __attribute__((__packed__)) struct_tcp{
     u_int8_t opciones[3];
     u_int8_t relleno;
     u_int32_t datos;
-};
+} struct_tcp;
 
+/*
+ * Estructura para la cabecera UDP.
+ * Solo incluye los campos obligatorios, no incluye la suma de control ni los octetos de datos
+ */
 struct __attribute__((__packed__)) struct_udp{
     u_int16_t puertoOrigen;
     u_int16_t puertoDestino;
     u_int16_t longitud;    
-};
+} struct_udp;
 
 
 
@@ -124,7 +139,7 @@ struct_ip leerIP(u_int8_t* cabeceraIP);
  * Recibe: Puntero al inicio de la cabecera TCP del paquete.
  * Devuelve: Estructura con la informacion de la cabecera TCP.
  */
-struct_ip leerTCP(u_int8_t* cabeceraTCP);
+struct_tcp leerTCP(u_int8_t* cabeceraTCP);
 
 
 /*
@@ -133,7 +148,7 @@ struct_ip leerTCP(u_int8_t* cabeceraTCP);
  * Recibe: Puntero al inicio de la cabecera UDP del paquete.
  * Devuelve: Estructura con la informacion de la cabecera UDP.
  */
-struct_ip leerUDP(u_int8_t* cabeceraUDP);
+struct_udp leerUDP(u_int8_t* cabeceraUDP);
 
 
 /*

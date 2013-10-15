@@ -65,6 +65,7 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
     struct struct_ip si;
     struct struct_tcp st;
     struct struct_udp su;
+    u_int8_t tamano_ip;
     
     if(!paquete || !cabecera || cont < 0){
         return ERROR;
@@ -76,12 +77,13 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
         return OK;
     }
     
-    si = leerIP(paquete);
+    si = leerIP(paquete+ETH_HLEN);
     /*Distincion TCP o UDP*/
-    if (si.protocolo == PROTOCOL_TCP){
-        st = leerTCP(paquete);
-    } else if (si.protocolo == PROTOCOL_UDP){
-        su = leerUDP(paquete);
+    tamano_ip=si.version_IHL&0x0F;
+    if (ntoh(si.protocolo) == PROTOCOL_TCP){
+        st = leerTCP(paquete+ETH_HLEN+tamano_ip);
+    } else if (ntoh(si.protocolo) == PROTOCOL_UDP){
+        su = leerUDP(paquete+ETH_HLEN+tamano_ip);
     } else{
         return OK;      /*Se descarta el trafico no TCP o UDP*/
     }
@@ -93,19 +95,27 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
 struct_ethernet leerEthernet(u_int8_t* paquete){
     struct struct_ethernet se;
     memcpy(&se, paquete, ETH_HLEN);
-    paquete += ETH_HLEN;
     return se;
 }
 
 struct_ip leerIP(u_int8_t* cabeceraIP){
     struct struct_ip si;
     memcpy(&si, cabeceraIP, IP_HLEN);
-    cabeceraIP += IP_HLEN;
     return si;
    
 }
 
+struct_tcp leerTCP (u_int8_t* cabeceraTCP) {
+    struct struct_tcp st;
+    memcpy(&st, cabeceraTCP, TCP_HLEN);
+    return st;    
+}
 
+struct_udp leerUDP (u_int8_t* cabeceraUDP) {
+    struct struct_udp su;
+    memcpy(&su, cabeceraUDP, UDP_HLEN);
+    return su;    
+}
 
 
 void handleSignal(int nsignal) {
