@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include <pcap.h>
 #include <string.h>
@@ -27,6 +28,7 @@
                              /*                                          */
 #define ETH_IPTYPE    0x0800 /* Tipo de ethernet correspondiente a       */
                              /* protocolo IP                             */
+#define IP_ALEN       4       /* Tamano de direccion IP                  */
 #define IP_HLEN       sizeof(struct_ip)  /* Tamano de cabecera ip        */
 #define TCP_HLEN      sizeof(struct_tcp) /*Tamano cabecera TCP           */
 #define UDP_HLEN      sizeof(struct_udp) /*Tamano cabecera UDP           */
@@ -40,9 +42,17 @@
 #define ETH_DATA_MIN  (ETH_FRAME_MIN - ETH_HLEN)  /*Tamano minimo	 */
 /*************************************************************************/
 
+/**************************Argumentos del programa************************/
+#define F_IP_O "-ipo"    /* Argumento para filtrar por ip de origen      */
+#define F_IP_D "-ipd"    /* Argumento para filtrar por ip de destino     */
+#define F_PUERTO_O "-po" /* Argumento para filtrar por puerto de origen  */
+#define F_PUERTO_D "-pd" /* Argumento para filtrar por puerto de destino */
+/*************************************************************************/
+
 /* Macros */
 #define OK 0
 #define ERROR 1
+#define ERROR_FILTRO 2 /*indica que un paquete no pasa el filtro*/
 #define N_BYTES 70 /*Esto hay que calcularlo.*/
 
 /*Estructuras*/
@@ -50,7 +60,7 @@
 /*
  * Estructura para la cabecera Ethernet
  */
-struct __attribute__((__packed__)) struct_ethernet {
+typedef struct __attribute__ ((__packed__)) struct_ethernet {
     u_int8_t destino[ETH_ALEN];
     u_int8_t origen[ETH_ALEN];
     u_int16_t tipoEth;
@@ -60,7 +70,7 @@ struct __attribute__((__packed__)) struct_ethernet {
  * Estructura para la cabecera IP.
  * Solo incluye los campos obligatorios del protocolo, no incluye las opciones ni el relleno final.
  */
-struct __attribute__((__packed__)) struct_ip {
+typedef struct __attribute__ ((__packed__)) struct_ip {
     u_int8_t version_IHL;
     u_int8_t tipoServicio;
     u_int16_t longitud;
@@ -69,14 +79,14 @@ struct __attribute__((__packed__)) struct_ip {
     u_int8_t tiempoDeVida;
     u_int8_t protocolo;
     u_int16_t sumaControlCabecera;
-    u_int32_t destino;
-    u_int32_t origen;
+    u_int8_t origen[IP_ALEN];
+    u_int8_t destino[IP_ALEN];
 } struct_ip;
 
 /*
  * Estructura para la cabecera TCP.
  */
-struct __attribute__((__packed__)) struct_tcp{
+typedef struct __attribute__ ((__packed__)) struct_tcp{
     u_int16_t puertoOrigen;
     u_int16_t puertoDestino;
     u_int32_t secuencia;
@@ -95,24 +105,35 @@ struct __attribute__((__packed__)) struct_tcp{
  * Estructura para la cabecera UDP.
  * Solo incluye los campos obligatorios, no incluye la suma de control ni los octetos de datos
  */
-struct __attribute__((__packed__)) struct_udp{
+typedef struct __attribute__ ((__packed__)) struct_udp{
     u_int16_t puertoOrigen;
     u_int16_t puertoDestino;
     u_int16_t longitud;    
 } struct_udp;
 
-
+/*
+ * Estructura para filtrar los paquetes que capturemos.
+ */
+typedef struct s_filtro {
+    u_int8_t ipOrigen[IP_ALEN];
+    u_int8_t ipDestino[IP_ALEN];
+    u_int16_t puertoOrigen;
+    u_int16_t puertoDestino;
+} s_filtro;
 
 
 /*
  * Analiza un paquete imprimiendo en el standard output la informacion
  * del mismo.
  * Modifica el puntero recibido colocándolo al inicio de los datos.
- * Recibe: Puntero al inicio del paquete, cabecera del paquete, contador de paquetes.
+ * Recibe: Puntero al inicio del paquete, cabecera del paquete, contador de paquetes, filtro
  * Devuelve: 0 si no han habido errores.
  *	     1 si se le pasan argumentos invalidos (e.g punteros a NULL).
  */
-u_int8_t analizarPaquete(u_int8_t*, struct pcap_pkthdr*, u_int64_t);
+u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int64_t cont, s_filtro *filtro);
+
+
+u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtro *filtro);
 
 
 /*
@@ -123,6 +144,7 @@ u_int8_t analizarPaquete(u_int8_t*, struct pcap_pkthdr*, u_int64_t);
  */
 struct_ethernet leerEthernet(u_int8_t* paquete);
 
+void printEthernet(struct struct_ethernet cabecera);
 
 /*
  * Lee la cabecera IP de un paquete.
@@ -132,6 +154,7 @@ struct_ethernet leerEthernet(u_int8_t* paquete);
  */
 struct_ip leerIP(u_int8_t* cabeceraIP);
 
+void printIP(struct_ip cabecera);
 
 /*
  * Lee la cabecera TCP de un paquete.
@@ -141,6 +164,7 @@ struct_ip leerIP(u_int8_t* cabeceraIP);
  */
 struct_tcp leerTCP(u_int8_t* cabeceraTCP);
 
+void printTCP(struct_tcp cabecera);
 
 /*
  * Lee la cabecera UDP de un paquete.
@@ -150,6 +174,7 @@ struct_tcp leerTCP(u_int8_t* cabeceraTCP);
  */
 struct_udp leerUDP(u_int8_t* cabeceraUDP);
 
+void printUDP(struct_udp cabecera);
 
 /*
  * Funcion manejadora de la señal Ctrl+C (SIGINT).
@@ -157,5 +182,12 @@ struct_udp leerUDP(u_int8_t* cabeceraUDP);
  */
 void handleSignal(int nsignal);
 
+void init_filtro(s_filtro *filtro);
+
+int procesarArgumentos(int argc, char** argv, s_filtro* filtro, char** nombreArchivo);
+
+int filtro_ip (u_int8_t* IP, char* cadena);
+
+void printAyudaPrograma();
 
 #endif /*PRACTICA2__H*/
