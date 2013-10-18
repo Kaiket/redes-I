@@ -389,7 +389,7 @@ int filtro_ip (u_int8_t* IP, char* cadena) {
         aux=NULL;
         i++;
     }
-    if (i!=IP_ALEN) return ERROR; /*si no hemos leido tantos numeros como itene la direccion IP, error*/
+    if (i!=IP_ALEN) return ERROR; /*si no hemos leido tantos numeros como tiene la direccion IP, error*/
     return OK;
 }
 
