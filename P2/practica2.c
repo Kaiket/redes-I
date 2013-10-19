@@ -15,12 +15,18 @@ int main(int argc, char **argv) {
     u_int8_t* paquete;                  /*Inicio del paquete a analizar*/
     struct pcap_pkthdr cabecera;        /*Cabecera del paquete*/
     char errbuf[PCAP_ERRBUF_SIZE];      /*Cadena de error, en su caso*/
-    s_filtro filtro;             /*Estructura para filtrar los paquetes capturados*/
-    char* nombreArchivo=NULL; /*nombre del archivo de que leer la traza*/
+    s_filtro filtro;                    /*Estructura para filtrar los 
+                                          paquetes capturados*/
+    char* nombreArchivo=NULL;           /*Nombre del archivo de 
+                                          que leer la traza*/
     
+    /*Se inicializa el filtro con todas las variables a 0*/
     init_filtro(&filtro);
     
-    if (procesarArgumentos(argc, argv, &filtro, &nombreArchivo)!=OK) return ERROR;
+    /*Se procesan los argumentos de programa*/
+    if (procesarArgumentos(argc, argv, &filtro, &nombreArchivo) != OK){
+        return ERROR;
+    }
     
     /*Captura de la sena SIGINT*/
     if (signal(SIGINT, handleSignal) == SIG_ERR) {
@@ -56,7 +62,7 @@ int main(int argc, char **argv) {
             exit(EXIT_FAILURE);
         }
         paquete = (u_int8_t*) pcap_next(descr, &cabecera);
-        if (retorno==OK){ //el paquete ha pasado el filtro, lo contamos
+        if (retorno == OK){ /*El paquete ha pasado el filtro, lo contamos*/
             ++cont;
         }
     }
@@ -68,8 +74,8 @@ int main(int argc, char **argv) {
 }
 
 /*
- *
- *
+ * Lee las cabeceras de un paquete, e imprime los datos de las mismas a menos
+ * que no sea trafico IP, TCP o UDP.
  */
 u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int64_t cont, s_filtro *filtro) {
     
@@ -78,12 +84,13 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
     struct struct_tcp st;
     struct struct_udp su;
     u_int8_t tamano_ip;
-    void* cabeceraTransporte=NULL;
+    void* cabeceraTransporte = NULL;
     
     if (!paquete || !cabecera || cont < 0 || !filtro) {
         return ERROR;
     }
     
+    /*Lectura de la cabecera ethernet*/
     se = leerEthernet(paquete);
     
     /*Descarte del trafico no ip*/
@@ -91,91 +98,130 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
         return OK;
     }
     
+    /*Lectura de la cabecera IP*/
     si = leerIP(paquete+ETH_HLEN);
+    
+    /*El IHL da el tamaño en palabras de 32 bits, multiplicando por 4 obtenemos 
+      el tamaño en bytes*/
+    tamano_ip=(si.version_IHL&0x0F)*4;
+    
     /*Distincion TCP o UDP*/
-    tamano_ip=(si.version_IHL&0x0F)*4; /*el IHL da el tamaño en palabras de 32 bits, multiplicando por 4 obtenemos el tamaño en bytes*/
     if (si.protocolo == PROTOCOL_TCP){
         st = leerTCP(paquete+ETH_HLEN+tamano_ip);
         cabeceraTransporte=(void*)(&st);
-    } else if (si.protocolo == PROTOCOL_UDP){
+    } 
+    else if (si.protocolo == PROTOCOL_UDP){
         su = leerUDP(paquete+ETH_HLEN+tamano_ip);
         cabeceraTransporte=(void*)(&su);
-    } else{
-        return OK;      /*Se descarta el trafico no TCP o UDP*/
+    } 
+    else{
+        /*Se descarta el trafico no TCP o UDP*/
+        return OK;
     }
-    
-    /*Aqui irian las llamadas a funciones de impresion de datos.*/
-    
-    if (filtrarPaquete(si, cabeceraTransporte, filtro) != OK) return OK; /*el paquete no ha pasado el filtro, no imprimiremos los datos*/
-    printf("\n");
+       
+    /*Si el paquete no ha pasado el filtro, no imprimiremos los datos*/
+    if (filtrarPaquete(si, cabeceraTransporte, filtro) != OK){
+        return OK;  
+    }
+
+    /*Funciones de impresion de datos*/  
+    printf("\nPaquete %" PRIu64 "\n", cont);
     printEthernet(se);
     printIP(si);
-    if (si.protocolo == PROTOCOL_TCP) printTCP(st);
-    else printUDP(su);
-    printf("\n");
+    if (si.protocolo == PROTOCOL_TCP){
+        printTCP(st);
+    }
+    else {
+        printUDP(su);
+    }
+    printf("\n\n");
     return OK;
 }
 
 /*
- *
- *
- *
- *
- *
+ * Filtra el paquete por direccion de ip y por puertos en funcion del contenido
+ * del filtro.
  */
 u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtro *filtro) {
+    
     int i;
-    char flag=0; /*flag que indica si filtramos por un determinado campo o no*/
+    char flag = 0; /*Flag que indica si filtramos por un determinado campo o no*/
     
-    if (!cabeceraTransporte) return ERROR;
-    
-    if (cabeceraIP.protocolo!=PROTOCOL_TCP && cabeceraIP.protocolo!=PROTOCOL_UDP) return ERROR_FILTRO; /*el paquete no pasa el filtro*/
-    
-    for (i=0; i<IP_ALEN; i++) { /*comprobamos si filtramos por este campo (algun numero de la ip debe ser != 0*/
-        if (filtro->ipOrigen[i]!=0) flag=1;
+    if (!cabeceraTransporte){
+        return ERROR;
     }
-    if (flag!=0) { /*si filtramos por dicho campo, comprobamos si el paquete pasa el filtro*/
-        for (i=0; i<IP_ALEN; i++) {
-            if (cabeceraIP.origen[i]!=filtro->ipOrigen[i]) return ERROR_FILTRO; /*se filtra por este campo y este paquete no pasa el filtro*/
+    
+    if (cabeceraIP.protocolo! = PROTOCOL_TCP && 
+        cabeceraIP.protocolo! = PROTOCOL_UDP){
+        return ERROR_FILTRO; /*El paquete no pasa el filtro*/
+    } 
+    
+    /*Filtro por direccion IP origen y destino*/
+    for (i = 0; i < IP_ALEN; i++) { 
+        /*Comprobamos si el filtro ha cambiado del estado inicializado*/
+        if (filtro->ipOrigen[i] != 0){
+            flag=1;
         }
     }
     
-    flag=0; /*reiniciamos el flag de filtro para el siguiente campo*/
-    /*mismo procedimiento para ip destino*/
-    for (i=0; i<IP_ALEN; i++) {
-        if (filtro->ipDestino[i]!=0) flag=1;
+    /*Si filtramos por dicho campo, comprobamos si el paquete pasa el filtro*/
+    if (flag!=0) {
+        for (i = 0; i < IP_ALEN; i++) {
+            if (cabeceraIP.origen[i] != filtro->ipOrigen[i]){ 
+                return ERROR_FILTRO; /*El paquete no pasa el filtro*/
+            }
+        }
+    }
+    
+    flag = 0; /*Reiniciamos el flag de filtro para el siguiente campo*/
+    
+    for (i = 0; i < IP_ALEN; i++) {
+        /*Comprobamos si el filtro ha cambiado del estado inicializado*/
+        if (filtro->ipDestino[i]!=0){
+            flag=1;
+        }
     }
     if (flag!=0) {
-        for (i=0; i<IP_ALEN; i++) {
-            if (cabeceraIP.destino[i]!=filtro->ipDestino[i]) return ERROR_FILTRO;
+        for (i = 0; i < IP_ALEN; i++) {
+            if (cabeceraIP.destino[i] != filtro->ipDestino[i]){
+                return ERROR_FILTRO; /*El paquete no pasa el filtro*/
+            }
         }
     }
     
     
-    /*filtramos ahora por puertos*/
+    /*Filtro por puertos*/
     if (filtro->puertoOrigen!=0) {
         if (cabeceraIP.protocolo==PROTOCOL_TCP) { /*caso de cabecera TCP*/
-            if ( ntohs(((struct_tcp*)cabeceraTransporte)->puertoOrigen)!=filtro->puertoOrigen) return ERROR_FILTRO;
+            if ( ntohs(((struct_tcp*)cabeceraTransporte)->puertoOrigen)!=filtro->puertoOrigen){
+                return ERROR_FILTRO;
+            }
         }
-        else { /*caso de cabecera UDP*/
-            if ( ntohs(((struct_udp*)cabeceraTransporte)->puertoOrigen)!=filtro->puertoOrigen) return ERROR_FILTRO;
+        else { /*Caso de cabecera UDP*/
+            if ( ntohs(((struct_udp*)cabeceraTransporte)->puertoOrigen)!=filtro->puertoOrigen){
+                return ERROR_FILTRO;
+            }
         }
     }
     
     if (filtro->puertoDestino!=0) {
         if (cabeceraIP.protocolo==PROTOCOL_TCP) { /*caso de cabecera TCP*/
-            if ( ntohs(((struct_tcp*)cabeceraTransporte)->puertoDestino)!=filtro->puertoDestino) return ERROR_FILTRO;
+            if ( ntohs(((struct_tcp*)cabeceraTransporte)->puertoDestino)!=filtro->puertoDestino){
+                return ERROR_FILTRO;
+            }
         }
-        else { /*caso de cabecera UDP*/
-            if ( ntohs(((struct_udp*)cabeceraTransporte)->puertoDestino)!=filtro->puertoDestino) return ERROR_FILTRO;
+        else { /*Caso de cabecera UDP*/
+            if ( ntohs(((struct_udp*)cabeceraTransporte)->puertoDestino)!=filtro->puertoDestino){
+                return ERROR_FILTRO;
+            }
         }
     }
     return OK;
 }
 
 /*
- *
- *
+ * Devuelve una estructura ethernet con la informacion de la cabecera
+ * ethernet del paquete.
  */
 struct_ethernet leerEthernet(u_int8_t* paquete){
     struct_ethernet se;
@@ -185,8 +231,7 @@ struct_ethernet leerEthernet(u_int8_t* paquete){
 
 
 /*
- *
- *
+ * Imprime la informacion de la cabecera ethernet del paquete.
  */
 void printEthernet(struct_ethernet cabecera) {
     int i;
@@ -209,8 +254,8 @@ void printEthernet(struct_ethernet cabecera) {
 }
 
 /*
- *
- *
+ * Devuelve una estructura IÑ con la informacion de la cabecera
+ * IP del paquete.
  */
 struct_ip leerIP(u_int8_t* cabeceraIP){
     struct_ip si;
@@ -220,8 +265,7 @@ struct_ip leerIP(u_int8_t* cabeceraIP){
 }
 
 /*
- *
- *
+ * Imprime la informacion de la cabecera IP del paquete.
  */
 void printIP(struct_ip cabecera) {
     int i;
@@ -249,8 +293,8 @@ void printIP(struct_ip cabecera) {
 }
 
 /*
- *
- *
+ * Devuelve una estructura TCP con la informacion de la cabecera
+ * TCP del paquete.
  */
 struct_tcp leerTCP (u_int8_t* cabeceraTCP) {
     struct_tcp st;
@@ -259,8 +303,7 @@ struct_tcp leerTCP (u_int8_t* cabeceraTCP) {
 }
 
 /*
- *
- *
+ * Imprime la informacion de la cabecera TCP del paquete.
  */
 void printTCP (struct_tcp st) {
     printf("Cabecera TCP\n");
@@ -270,8 +313,8 @@ void printTCP (struct_tcp st) {
 }
 
 /*
- *
- *
+ * Devuelve una estructura UDP con la informacion de la cabecera
+ * UDP del paquete.
  */
 struct_udp leerUDP (u_int8_t* cabeceraUDP) {
     struct_udp su;
@@ -280,8 +323,7 @@ struct_udp leerUDP (u_int8_t* cabeceraUDP) {
 }
 
 /*
- *
- *
+ * Imprime la informacion de la cabecera UDP del paquete.
  */
 void printUDP (struct_udp su) {
     printf("Cabecera UDP\n");
@@ -292,8 +334,7 @@ void printUDP (struct_udp su) {
 }
 
 /*
- *
- *
+ * Maneja la señal SIGINT cerrando el fichero o interfaz.
  */
 void handleSignal(int nsignal) {
     printf("Control+C pulsado (%lu)\n", cont);
@@ -302,8 +343,7 @@ void handleSignal(int nsignal) {
 }
 
 /*
- *
- *
+ * Se inicializa la estructura de filtro con todos los valores a 0.
  */
 void init_filtro(s_filtro *filtro) {
     int i;
@@ -316,83 +356,99 @@ void init_filtro(s_filtro *filtro) {
 }
 
 /*
- *
- *
+ * Modifica el contenido del filtro, añadiendole los valores pasados como
+ * opciones. En caso de que se pase un archivo, modifica el contenido del nombre
+ * del archivo.
  */
-int procesarArgumentos(int argc, char** argv, s_filtro* filtro, char** nombreArchivo) {
+int procesarArgumentos(int argc, char** argv, s_filtro* filtro, 
+                       char** nombreArchivo) {
+    
     int i;
     
-    if (argc<1 || !argv || !filtro || !nombreArchivo) {
+    if (argc < 1 || !argv || !filtro || !nombreArchivo) {
         return ERROR;
     }
     
-    *nombreArchivo=NULL;
-    for (i=1; i<argc; ) {
-        /*el argumento de nombre de archivo debe ser el primero*/
-        if (i==1 && argv[1][0]!='-') { /*las opciones de parametros deben empezar por '-', si no empieza asi debe ser el nombre de archivo*/
-            *nombreArchivo=argv[1]; 
+    for (i = 1; i < argc; ) {
+        /*El argumento de nombre de archivo debe ser el primero. Las opciones de
+        parametros deben empezar por '-', si no empieza debe ser el nombre de 
+        archivo*/
+        if (i == 1 && argv[1][0] != '-') { 
+            *nombreArchivo = argv[1]; 
             i++;
         }
         else {
-            if (strcmp(argv[i], F_IP_O)==0 && argc>i+1) { /*hemos recibido la opcion ip origen y tenemos argumentos suficientes.*/
+            /*Se recibe la opcion ip origen y hay argumentos suficientes*/
+            if (strcmp(argv[i], F_IP_O)==0 && argc>i+1) {
                 if (filtro_ip(filtro->ipOrigen, argv[i+1])!=OK) {
                     printAyudaPrograma();
                     return ERROR;
                 }
             }
-            
-            else if (strcmp(argv[i], F_IP_D)==0 && argc>i+1) { /*hemos recibido una opcion ip destino y tenemos argumentos suficientes.*/
+            /*Se recibe una opcion ip destino y hay argumentos suficientes.*/
+            else if (strcmp(argv[i], F_IP_D)==0 && argc>i+1) { 
                 if (filtro_ip(filtro->ipDestino, argv[i+1])!=OK) {
                     printAyudaPrograma();
                     return ERROR;
                 }
             }
-            
-            else if (strcmp(argv[i], F_PUERTO_O)==0 && argc>i+1) { /*hemos recibido una opcion de puerto de origen y hay argumentos suficientes*/
+            /*Se recibe una opcion de puerto de origen y hay argumentos suficientes*/
+            else if (strcmp(argv[i], F_PUERTO_O)==0 && argc>i+1) { 
                 if (sscanf(argv[i+1], "%" SCNu16, &(filtro->puertoOrigen))!=1) {
                     printAyudaPrograma();
                     return ERROR;
                 }
             }
-            
-            else if (strcmp(argv[i], F_PUERTO_D)==0 && argc>i+1) { /*hemos recibido una opcion de puerto de destino y hay argumentos suficientes*/
+            /*Se reciben una opcion de puerto de destino y hay argumentos suficientes*/
+            else if (strcmp(argv[i], F_PUERTO_D)==0 && argc>i+1) { 
                 if (sscanf(argv[i+1], "%" SCNu16, &(filtro->puertoDestino))!=1) {
                     printAyudaPrograma();
                     return ERROR;
                 }
             }
-            
+            /*No se reconoce la opción, se imprime la ayuda.*/
             else {
                 printf("Opcion no reconocida.\n");
                 printAyudaPrograma();
                 return ERROR;
             }
-            
-            i+=2; /*saltamos la opcion y su argumento*/
-        }
-        
+            /*Saltamos la opcion y su argumento*/
+            i+=2;
+        }   
     }
     return OK;
 }
 
 /*
- * 
- * 
+ * Guarda en el entero IP la ip contenida en cadena, eliminando los puntos.
  */
 int filtro_ip (u_int8_t* IP, char* cadena) {
+    
+    int i = 0;
     char *aux, *ret;
-    int i=0;
-    if (!IP || !cadena) return ERROR;
-    aux=cadena;
-    while ((ret=strtok(aux,"."))!=NULL) {
+    
+    if (!IP || !cadena){
+        return ERROR;
+    }
+    
+    aux = cadena;
+    
+    /*Se guarda en IP los valores numericos (sin los puntos) de la cadena.*/
+    while ((ret=strtok(aux,".")) != NULL) {
         sscanf(ret, "%" SCNu8, &(IP[i]));
         aux=NULL;
         i++;
     }
-    if (i!=IP_ALEN) return ERROR; /*si no hemos leido tantos numeros como tiene la direccion IP, error*/
+    /*Si no hemos leido tantos numeros como tiene la direccion IP se devuelve
+      error. */
+    if (i != IP_ALEN){
+        return ERROR;
+    }  
     return OK;
 }
 
+
+/*Se imprime la informacion necesaria para la ejecucion del programa. */
 void printAyudaPrograma() {
     printf("El programa se ejecuta de la siguiente manera:\n");
     printf("\t./practica2 [archivo] [<filtro> <dato a filtrar>]\n");

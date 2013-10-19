@@ -1,6 +1,6 @@
-/***************************************************************************
- * Autores: Enrique Cabrerizo Fernández, Guillermo Ruiz Álvarez
- * Archivo: practica2.h
+/****************************************************************************
+ * Autores: Enrique Cabrerizo Fernández, Guillermo Ruiz Álvarez             
+ * Archivo: practica2.h                                                                 
  ****************************************************************************/
 
 #ifndef __PRACTICA2_H
@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <inttypes.h>
-
 #include <pcap.h>
 #include <string.h>
 #include <netinet/in.h>
@@ -28,10 +27,10 @@
                              /*                                          */
 #define ETH_IPTYPE    0x0800 /* Tipo de ethernet correspondiente a       */
                              /* protocolo IP                             */
-#define IP_ALEN       4       /* Tamano de direccion IP                  */
-#define IP_HLEN       sizeof(struct_ip)  /* Tamano de cabecera ip        */
-#define TCP_HLEN      sizeof(struct_tcp) /*Tamano cabecera TCP           */
-#define UDP_HLEN      sizeof(struct_udp) /*Tamano cabecera UDP           */
+#define IP_ALEN       4      /* Tamano de direccion IP                   */
+#define IP_HLEN       sizeof(struct_ip)    /*Tamano de cabecera IP       */
+#define TCP_HLEN      sizeof(struct_tcp)   /*Tamano cabecera TCP         */
+#define UDP_HLEN      sizeof(struct_udp)   /*Tamano cabecera UDP         */
                              /*                                          */
 #define PROTOCOL_TCP  6      /* Protocolo TCP                            */
 #define PROTOCOL_UDP  17     /* Protocolo UDP                            */
@@ -43,8 +42,8 @@
 /*************************************************************************/
 
 /**************************Argumentos del programa************************/
-#define F_IP_O "-ipo"    /* Argumento para filtrar por ip de origen      */
-#define F_IP_D "-ipd"    /* Argumento para filtrar por ip de destino     */
+#define F_IP_O     "-ipo"    /* Argumento para filtrar por ip de origen  */
+#define F_IP_D     "-ipd"    /* Argumento para filtrar por ip de destino */
 #define F_PUERTO_O "-po" /* Argumento para filtrar por puerto de origen  */
 #define F_PUERTO_D "-pd" /* Argumento para filtrar por puerto de destino */
 /*************************************************************************/
@@ -52,11 +51,10 @@
 /* Macros */
 #define OK 0
 #define ERROR 1
-#define ERROR_FILTRO 2 /*indica que un paquete no pasa el filtro*/
-#define N_BYTES 70 /*Esto hay que calcularlo.*/
+#define ERROR_FILTRO 2 /*Indica que un paquete no pasa el filtro*/
+#define N_BYTES ETH_HLEN+IP_HLEN+TCP_HLEN /*Maximo a leer de un paquete*/
 
-/*Estructuras*/
-
+/*******************************Estructuras*******************************/
 /*
  * Estructura para la cabecera Ethernet
  */
@@ -103,7 +101,8 @@ typedef struct __attribute__ ((__packed__)) struct_tcp{
 
 /*
  * Estructura para la cabecera UDP.
- * Solo incluye los campos obligatorios, no incluye la suma de control ni los octetos de datos
+ * Solo incluye los campos obligatorios,
+ * no incluye la suma de control ni los octetos de datos
  */
 typedef struct __attribute__ ((__packed__)) struct_udp{
     u_int16_t puertoOrigen;
@@ -121,24 +120,67 @@ typedef struct s_filtro {
     u_int16_t puertoDestino;
 } s_filtro;
 
+/************************Prototipos de funciones**************************/
+
+/*
+ * Inicializa una estructura de filtro con todos sus valores a 0.
+ * Recibe: Puntero a estructura de filtro.
+ */
+void init_filtro(s_filtro *filtro);
+
+/*
+ * Procesa los argumentos.
+ * Si se le pasa el nombre de un archivo, ha de ser el primer argumento.
+ * Las opciones disponibles son:
+ *      -ipo: Filtrar por direccion de origen.
+ *      -ipd: Filtrar por direccion de destino.
+ *      -po:  Filtrar por puerto de origen.
+ *      -pd:  Filtrar por puerto de destino.
+ * Recibe: Numero de argumentos, argumentos, puntero a estructura de filtro y
+ * puntero doble a char, donde se guardara el nombre del archivo.
+ * Devuelve: 0 si no han habido errores.
+ *	     1 si se le pasan argumentos invalidos (e.g punteros a NULL).
+ */
+int procesarArgumentos(int argc, char** argv, s_filtro* filtro, char** nombreArchivo);
+
 
 /*
  * Analiza un paquete imprimiendo en el standard output la informacion
  * del mismo.
- * Modifica el puntero recibido colocándolo al inicio de los datos.
- * Recibe: Puntero al inicio del paquete, cabecera del paquete, contador de paquetes, filtro
+ * Recibe: Puntero al inicio del paquete, cabecera del paquete, 
+ *         contador de paquetes, filtro
  * Devuelve: 0 si no han habido errores.
  *	     1 si se le pasan argumentos invalidos (e.g punteros a NULL).
  */
-u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int64_t cont, s_filtro *filtro);
+u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, 
+                         u_int64_t cont, s_filtro *filtro);
 
 
+/*
+ * Almacena en el entero al que apunta IP la direccion IP contenida en cadena.
+ * Ignora el punto de separación de hexadecimales.
+ * Recibe:  Puntero a entero en el que almacenar la IP, cadena con la IP en
+ *          hexadecimal, con los valores separados por puntos.
+ * Devuelve: 0 si no han habido errores.
+ *	     1 si se le pasan argumentos invalidos (e.g punteros a NULL).
+ */
+int filtro_ip (u_int8_t* IP, char* cadena);
+
+
+/*
+ * Filtra un paquete en función de la direccion IP y de
+ * los puertos (ambos origen y destino) que contenga el filtro.
+ * Recibe: Puntero a cabecera IP del paquete, puntero a cabecera de tranporte
+ * (TCP o UDP), puntero al filtro.
+ * Devuelve: 0 si no han habido errores.
+ *	     1 si se le pasan argumentos invalidos (e.g punteros a NULL).
+ *           2 si el paquete no pasa el filtro.
+ */
 u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtro *filtro);
 
 
 /*
  * Lee la cabecera Ethernet de un paquete.
- * Modifica el puntero recibido colocandolo al inicio de la siguiente cabecera.
  * Recibe: Puntero al inicio del paquete.
  * Devuelve: Estructura con la informacion de la cabecera Ethernet.
  */
@@ -148,7 +190,6 @@ void printEthernet(struct struct_ethernet cabecera);
 
 /*
  * Lee la cabecera IP de un paquete.
- * Modifica el puntero recibido colocandolo al inicio de la siguiente cabecera.
  * Recibe: Puntero al inicio de la cabecera IP del paquete.
  * Devuelve: Estructura con la informacion de la cabecera IP.
  */
@@ -158,7 +199,6 @@ void printIP(struct_ip cabecera);
 
 /*
  * Lee la cabecera TCP de un paquete.
- * Modifica el puntero recibido colocandolo al inicio de la siguiente cabecera.
  * Recibe: Puntero al inicio de la cabecera TCP del paquete.
  * Devuelve: Estructura con la informacion de la cabecera TCP.
  */
@@ -182,12 +222,10 @@ void printUDP(struct_udp cabecera);
  */
 void handleSignal(int nsignal);
 
-void init_filtro(s_filtro *filtro);
 
-int procesarArgumentos(int argc, char** argv, s_filtro* filtro, char** nombreArchivo);
-
-int filtro_ip (u_int8_t* IP, char* cadena);
-
+/*
+ * Imprime la informacion necesaria para ejecutar el programa.
+ */
 void printAyudaPrograma();
 
 #endif /*PRACTICA2__H*/
