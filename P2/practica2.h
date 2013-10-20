@@ -52,7 +52,6 @@
 #define OK 0
 #define ERROR 1
 #define ERROR_FILTRO 2 /*Indica que un paquete no pasa el filtro*/
-#define N_BYTES ETH_HLEN+IP_HLEN+TCP_HLEN /*Maximo a leer de un paquete*/
 
 /*******************************Estructuras*******************************/
 /*

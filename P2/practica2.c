@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     /**Captura de interfaz / Apertura de fichero pcap**/
     /*Si no se reciben argumentos, se captura eth0*/
     if (nombreArchivo==NULL) {
-        if ((descr = pcap_open_live("eth0", N_BYTES, 0, 0, errbuf)) == NULL) {
+        if ((descr = pcap_open_live("eth0", ETH_FRAME_MAX, 0, 0, errbuf)) == NULL) {
             printf("Error: pcap_open_live(): %s %s %d", errbuf, __FILE__, __LINE__);
             exit(EXIT_FAILURE);
         }
