@@ -274,6 +274,7 @@ void printIP(struct_ip cabecera) {
     printf("Version IP: %u\n", (cabecera.version_IHL)>>4);
     printf("IHL: %u bytes\n", (cabecera.version_IHL&0xF)*4); /*el IHL da el tamaño en palabras de 32 bits, multiplicando por 4 obtenemos el tamaño en bytes*/
     printf("Longitud Total: %u\n", ntohs(cabecera.longitud));
+    printf("Posicion: %u\n" ntohs(cabecera.flags_posicion)); /*Completar*/
     printf("Tiempo de Vida: %u\n", cabecera.tiempoDeVida);
     printf("Protocolo: %u\n", cabecera.protocolo);
     
