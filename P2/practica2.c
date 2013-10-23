@@ -274,7 +274,7 @@ void printIP(struct_ip cabecera) {
     printf("Version IP: %u\n", (cabecera.version_IHL)>>4);
     printf("IHL: %u bytes\n", (cabecera.version_IHL&0xF)*4); /*el IHL da el tamaño en palabras de 32 bits, multiplicando por 4 obtenemos el tamaño en bytes*/
     printf("Longitud Total: %u\n", ntohs(cabecera.longitud));
-    printf("Posicion: %u\n" ntohs(cabecera.flags_posicion)&0x1F); 
+    printf("Posicion: %u\n", ntohs(cabecera.flags_posicion)&0x1F); 
     printf("Tiempo de Vida: %u\n", cabecera.tiempoDeVida);
     printf("Protocolo: %u\n", cabecera.protocolo);
     
@@ -338,7 +338,7 @@ void printUDP (struct_udp su) {
  * Maneja la señal SIGINT cerrando el fichero o interfaz.
  */
 void handleSignal(int nsignal) {
-    printf("Control+C pulsado (%lu)\n", cont);
+    printf("Control+C pulsado (%lu)\n", cont-1);
     pcap_close(descr);
     exit(EXIT_SUCCESS);
 }
