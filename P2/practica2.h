@@ -127,6 +127,7 @@ typedef struct s_filtro {
  */
 void init_filtro(s_filtro *filtro);
 
+
 /*
  * Procesa los argumentos.
  * Si se le pasa el nombre de un archivo, ha de ser el primer argumento.
@@ -153,7 +154,6 @@ int procesarArgumentos(int argc, char** argv, s_filtro* filtro, char** nombreArc
  */
 u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, 
                          u_int64_t cont, s_filtro *filtro);
-
 
 /*
  * Almacena en el entero al que apunta IP la direccion IP contenida en cadena.
@@ -185,7 +185,13 @@ u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtr
  */
 struct_ethernet leerEthernet(u_int8_t* paquete);
 
+
+/*
+ * Imprime la cabecera Ethernet.
+ * Recibe: Estructura de la cabecera.
+ */
 void printEthernet(struct struct_ethernet cabecera);
+
 
 /*
  * Lee la cabecera IP de un paquete.
@@ -194,6 +200,11 @@ void printEthernet(struct struct_ethernet cabecera);
  */
 struct_ip leerIP(u_int8_t* cabeceraIP);
 
+
+/*
+ * Imprime la cabecera IP.
+ * Recibe: Estructura de la cabecera.
+ */
 void printIP(struct_ip cabecera);
 
 /*
@@ -203,7 +214,13 @@ void printIP(struct_ip cabecera);
  */
 struct_tcp leerTCP(u_int8_t* cabeceraTCP);
 
+
+/*
+ * Imprime la cabecera TCP.
+ * Recibe: Estructura de la cabecera.
+ */
 void printTCP(struct_tcp cabecera);
+
 
 /*
  * Lee la cabecera UDP de un paquete.
@@ -213,7 +230,13 @@ void printTCP(struct_tcp cabecera);
  */
 struct_udp leerUDP(u_int8_t* cabeceraUDP);
 
+
+/*
+ * Imprime la cabecera UDP.
+ * Recibe: Estructura de la cabecera.
+ */
 void printUDP(struct_udp cabecera);
+
 
 /*
  * Funcion manejadora de la señal Ctrl+C (SIGINT).
