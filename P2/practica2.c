@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     char errbuf[PCAP_ERRBUF_SIZE];      /*Cadena de error, en su caso*/
     s_filtro filtro;                    /*Estructura para filtrar los 
                                           paquetes capturados*/
-    char* nombreArchivo=NULL;           /*Nombre del archivo de 
+    char* nombreArchivo = NULL;         /*Nombre del archivo de 
                                           que leer la traza*/
     
     /*Se inicializa el filtro con todas las variables a 0*/
@@ -93,9 +93,9 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
     /*Lectura de la cabecera ethernet*/
     se = leerEthernet(paquete);
     
-    /*Descarte del trafico no ip*/
+    /*Descarte del trafico no IP*/
     if(ntohs(se.tipoEth) != ETH_IPTYPE){
-        return OK;
+        return ERROR_FILTRO;
     }
     
     /*Lectura de la cabecera IP*/
@@ -116,12 +116,12 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
     } 
     else{
         /*Se descarta el trafico no TCP o UDP*/
-        return OK;
+        return ERROR_FILTRO;
     }
        
     /*Si el paquete no ha pasado el filtro, no imprimiremos los datos*/
     if (filtrarPaquete(si, cabeceraTransporte, filtro) != OK){
-        return OK;  
+        return ERROR_FILTRO;  
     }
 
     /*Funciones de impresion de datos*/  
@@ -151,8 +151,8 @@ u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtr
         return ERROR;
     }
     
-    if (cabeceraIP.protocolo! = PROTOCOL_TCP && 
-        cabeceraIP.protocolo! = PROTOCOL_UDP){
+    if (cabeceraIP.protocolo != PROTOCOL_TCP && 
+        cabeceraIP.protocolo != PROTOCOL_UDP){
         return ERROR_FILTRO; /*El paquete no pasa el filtro*/
     } 
     
@@ -274,7 +274,7 @@ void printIP(struct_ip cabecera) {
     printf("Version IP: %u\n", (cabecera.version_IHL)>>4);
     printf("IHL: %u bytes\n", (cabecera.version_IHL&0xF)*4); /*el IHL da el tamaño en palabras de 32 bits, multiplicando por 4 obtenemos el tamaño en bytes*/
     printf("Longitud Total: %u\n", ntohs(cabecera.longitud));
-    printf("Posicion: %u\n" ntohs(cabecera.flags_posicion)); /*Completar*/
+    printf("Posicion: %u\n" ntohs(cabecera.flags_posicion)&0x1F); 
     printf("Tiempo de Vida: %u\n", cabecera.tiempoDeVida);
     printf("Protocolo: %u\n", cabecera.protocolo);
     
