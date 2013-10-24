@@ -63,14 +63,14 @@ int main(int argc, char **argv) {
             printf("Error al analizar el paquete %lu; %s %d.\n", __FILE__, __LINE__);
             exit(EXIT_FAILURE);
         }
-        paquete = (u_int8_t*) pcap_next(descr, &cabecera);
         if (retorno == OK){ /*El paquete ha pasado el filtro, lo contamos*/
             ++cont;
         }
-        else if (retorno != ERROR_DESCARTE) { /*paquetes no descartados por no ser IP,TCP o UDP*/
+        if (retorno != ERROR_DESCARTE) { /*paquetes no descartados por no ser IP,TCP o UDP*/
             ++cont_filtrado;
         }
         ++cont_total;
+        paquete = (u_int8_t*) pcap_next(descr, &cabecera);
     }
 
     printf("Recuento de paquetes:\n");
@@ -138,7 +138,7 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
     printf("\nPaquete %" PRIu64 "\n", cont);
     printEthernet(se);
     if (retorno_filtro==ERROR_IP) {
-        printf("El paquete es de tipo IP, pero no pasó el filtro de direcciones\n");
+        printf("El paquete es de tipo IP, pero no paso el filtro de direcciones\n");
         return ERROR_IP;
     }
     printIP(si);
