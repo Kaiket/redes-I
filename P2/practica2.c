@@ -8,6 +8,8 @@
 /*Variables globales*/
 pcap_t* descr;
 u_int64_t cont = 1;
+u_int64_t cont_filtrado = 1;
+u_int64_t cont_total = 1;
 
 int main(int argc, char **argv) {
 
@@ -57,7 +59,7 @@ int main(int argc, char **argv) {
 
     while (paquete) {
         /*Analisis del paquete*/
-        if ((retorno = analizarPaquete(paquete, &cabecera, cont, &filtro)) == ERROR) {
+        if ((retorno = analizarPaquete(paquete, &cabecera, cont_filtrado, &filtro)) == ERROR) {
             printf("Error al analizar el paquete %lu; %s %d.\n", __FILE__, __LINE__);
             exit(EXIT_FAILURE);
         }
@@ -65,9 +67,17 @@ int main(int argc, char **argv) {
         if (retorno == OK){ /*El paquete ha pasado el filtro, lo contamos*/
             ++cont;
         }
+        else if (retorno != ERROR_DESCARTE) { /*paquetes no descartados por no ser IP,TCP o UDP*/
+            ++cont_filtrado;
+        }
+        ++cont_total;
     }
 
-    printf("No hay mas paquetes (%lu).\n\n", cont-1, __FILE__, __LINE__);
+    printf("Recuento de paquetes:\n");
+    printf("\tTotal capturado: %lu\n", cont_total-1);
+    printf("\tTotal IP y TCP o UDP: %lu\n", cont_filtrado-1);
+    printf("\t\tPasan el filtro: %lu\n", cont-1);
+    printf("\t\tNo pasan el filtro: %lu\n", (cont_filtrado-cont));
     pcap_close(descr);
 
     return EXIT_SUCCESS;
@@ -83,7 +93,7 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
     struct struct_ip si;
     struct struct_tcp st;
     struct struct_udp su;
-    u_int8_t tamano_ip;
+    u_int8_t tamano_ip, retorno_filtro;
     void* cabeceraTransporte = NULL;
     
     if (!paquete || !cabecera || cont < 0 || !filtro) {
@@ -95,7 +105,7 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
     
     /*Descarte del trafico no IP*/
     if(ntohs(se.tipoEth) != ETH_IPTYPE){
-        return ERROR_FILTRO;
+        return ERROR_DESCARTE;
     }
     
     /*Lectura de la cabecera IP*/
@@ -116,22 +126,34 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, u_int6
     } 
     else{
         /*Se descarta el trafico no TCP o UDP*/
-        return ERROR_FILTRO;
+        return ERROR_DESCARTE;
     }
        
     /*Si el paquete no ha pasado el filtro, no imprimiremos los datos*/
-    if (filtrarPaquete(si, cabeceraTransporte, filtro) != OK){
-        return ERROR_FILTRO;  
-    }
-
+    retorno_filtro=filtrarPaquete(si, cabeceraTransporte, filtro);
+    
+    if (retorno_filtro==ERROR_DESCARTE) return ERROR_DESCARTE;
+    
     /*Funciones de impresion de datos*/  
     printf("\nPaquete %" PRIu64 "\n", cont);
     printEthernet(se);
+    if (retorno_filtro==ERROR_IP) {
+        printf("El paquete es de tipo IP, pero no pasó el filtro de direcciones\n");
+        return ERROR_IP;
+    }
     printIP(si);
     if (si.protocolo == PROTOCOL_TCP){
+        if (retorno_filtro==ERROR_TPT) {
+                printf("El paquete es de tipo TCP pero no paso el filtro de puertos\n");
+                return ERROR_TPT;
+        }
         printTCP(st);
     }
     else {
+        if (retorno_filtro==ERROR_TPT) {
+                printf("El paquete es de tipo UDP pero no paso el filtro de puertos\n");
+                return ERROR_TPT;
+        }
         printUDP(su);
     }
     printf("\n\n");
@@ -151,11 +173,6 @@ u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtr
         return ERROR;
     }
     
-    if (cabeceraIP.protocolo != PROTOCOL_TCP && 
-        cabeceraIP.protocolo != PROTOCOL_UDP){
-        return ERROR_FILTRO; /*El paquete no pasa el filtro*/
-    } 
-    
     /*Filtro por direccion IP origen y destino*/
     for (i = 0; i < IP_ALEN; i++) { 
         /*Comprobamos si el filtro ha cambiado del estado inicializado*/
@@ -168,7 +185,7 @@ u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtr
     if (flag!=0) {
         for (i = 0; i < IP_ALEN; i++) {
             if (cabeceraIP.origen[i] != filtro->ipOrigen[i]){ 
-                return ERROR_FILTRO; /*El paquete no pasa el filtro*/
+                return ERROR_IP; /*El paquete no pasa el filtro*/
             }
         }
     }
@@ -184,7 +201,7 @@ u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtr
     if (flag!=0) {
         for (i = 0; i < IP_ALEN; i++) {
             if (cabeceraIP.destino[i] != filtro->ipDestino[i]){
-                return ERROR_FILTRO; /*El paquete no pasa el filtro*/
+                return ERROR_IP; /*El paquete no pasa el filtro*/
             }
         }
     }
@@ -194,12 +211,12 @@ u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtr
     if (filtro->puertoOrigen!=0) {
         if (cabeceraIP.protocolo==PROTOCOL_TCP) { /*caso de cabecera TCP*/
             if ( ntohs(((struct_tcp*)cabeceraTransporte)->puertoOrigen)!=filtro->puertoOrigen){
-                return ERROR_FILTRO;
+                return ERROR_TPT;
             }
         }
         else { /*Caso de cabecera UDP*/
             if ( ntohs(((struct_udp*)cabeceraTransporte)->puertoOrigen)!=filtro->puertoOrigen){
-                return ERROR_FILTRO;
+                return ERROR_TPT;
             }
         }
     }
@@ -207,12 +224,12 @@ u_int8_t filtrarPaquete (struct_ip cabeceraIP, void* cabeceraTransporte, s_filtr
     if (filtro->puertoDestino!=0) {
         if (cabeceraIP.protocolo==PROTOCOL_TCP) { /*caso de cabecera TCP*/
             if ( ntohs(((struct_tcp*)cabeceraTransporte)->puertoDestino)!=filtro->puertoDestino){
-                return ERROR_FILTRO;
+                return ERROR_TPT;
             }
         }
         else { /*Caso de cabecera UDP*/
             if ( ntohs(((struct_udp*)cabeceraTransporte)->puertoDestino)!=filtro->puertoDestino){
-                return ERROR_FILTRO;
+                return ERROR_TPT;
             }
         }
     }
@@ -338,7 +355,11 @@ void printUDP (struct_udp su) {
  * Maneja la señal SIGINT cerrando el fichero o interfaz.
  */
 void handleSignal(int nsignal) {
-    printf("Control+C pulsado (%lu)\n", cont-1);
+    printf("\nControl+C pulsado\nRecuento de paquetes:\n");
+    printf("\tTotal capturado: %lu\n", cont_total-1);
+    printf("\tTotal IP y TCP o UDP: %lu\n", cont_filtrado-1);
+    printf("\t\tPasan el filtro: %lu\n", cont-1);
+    printf("\t\tNo pasan el filtro: %lu\n", (cont_filtrado-cont));
     pcap_close(descr);
     exit(EXIT_SUCCESS);
 }

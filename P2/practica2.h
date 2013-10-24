@@ -51,7 +51,9 @@
 /* Macros */
 #define OK 0
 #define ERROR 1
-#define ERROR_FILTRO 2 /*Indica que un paquete no pasa el filtro*/
+#define ERROR_IP 2 /*Indica que un paquete no pasa el filtro IP*/
+#define ERROR_TPT 3 /*Indica que un paquete no pasa el filtro de Transporte (TCP o UDP)*/
+#define ERROR_DESCARTE 4 /*Indica que un paquete no es IP, TCP o UDP*/
 
 /*******************************Estructuras*******************************/
 /*
