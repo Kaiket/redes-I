@@ -526,4 +526,3 @@ void salidaOrdenada(){
     fclose(datosPORTS);
     pcap_close(descr);
 }
-

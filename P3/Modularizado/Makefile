@@ -12,11 +12,11 @@ clean:
 
 # Reglas implicitas
 enlace.o:
-	gcc -c enlace.c enlace.h
+	gcc -c enlace.c enlace.h constantes.h
 red.o: 
-	gcc -c red.c red.h
+	gcc -c red.c red.h constantes.h
 transporte.o:
-	gcc -c transporte.c transporte.h
+	gcc -c transporte.c transporte.h constantes.h
 
 practica3.o: 
-	gcc -c practica3.c enlace.h red.h transporte.h constantes.h
+	gcc -c practica3.c practica3.h enlace.h red.h transporte.h constantes.h

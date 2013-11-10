@@ -83,4 +83,3 @@ void exportIPinfo(FILE* archivo, struct pcap_pkthdr* cabecera, struct_ip si);
 
 
 #endif	/* RED_H */
-

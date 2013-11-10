@@ -43,4 +43,3 @@
 #define ETH_DATA_MIN  (ETH_FRAME_MIN - ETH_HLEN) /*Tamaño minimo de datos eth*/
 
 #endif	/* CONSTANTES_H */
-

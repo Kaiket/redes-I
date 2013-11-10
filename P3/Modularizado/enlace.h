@@ -52,7 +52,4 @@ int enlace_esIP(struct_ethernet se);
  */
 int scan_eth (u_int8_t* MAC, char* cadena);
 
-
-
 #endif	/* ENLACE_H */
-
