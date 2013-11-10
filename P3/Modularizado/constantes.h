@@ -7,6 +7,18 @@
 #ifndef CONSTANTES_H
 #define	CONSTANTES_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <pcap.h>
+#include <string.h>
+#include <netinet/in.h>
+#include <linux/udp.h>
+#include <linux/tcp.h>
+#include <signal.h>
+#include <time.h>
+
 /*Control de errores*/
 #define OK 0
 #define ERROR 1

@@ -10,8 +10,6 @@
 #define	TRANSPORTE_H
 
 #include "constantes.h"
-#include <stdint.h>
-#include <inttypes.h>
 
 /*Definición de constantes*/
 #define TCP_HLEN sizeof(struct_tcp)     /*Tamano cabecera TCP*/

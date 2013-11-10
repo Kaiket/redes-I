@@ -4,12 +4,6 @@
  ***************************************************************************/
 
 #include "practica3.h"
-#include <netinet/in.h>
-#include <linux/udp.h>
-#include <linux/tcp.h>
-#include <signal.h>
-#include <time.h>
-#include <string.h>
 
 /*Variables globales*/
 pcap_t* descr;                  /*Descriptor del fichero pcap*/

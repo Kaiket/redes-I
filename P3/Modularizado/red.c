@@ -1,8 +1,4 @@
 #include "red.h"
-#include "constantes.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 /*
  * Vuelca la información de la cabecera IP en la estructura que devuelve.

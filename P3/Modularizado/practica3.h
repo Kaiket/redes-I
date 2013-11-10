@@ -6,15 +6,9 @@
 #ifndef __PRACTICA3_H
 #define __PRACTICA3_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <pcap.h>
 #include "enlace.h"
 #include "red.h"
 #include "transporte.h"
-#include "constantes.h"
 
 /*Argumentos del programa*/
 #define F_IP_O     "-ipo"  /*Argumento para filtrar por ip de origen*/

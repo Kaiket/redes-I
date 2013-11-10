@@ -1,8 +1,4 @@
 #include "transporte.h"
-#include "constantes.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 /*
  * Devuelve una estructura TCP con la informacion de la cabecera

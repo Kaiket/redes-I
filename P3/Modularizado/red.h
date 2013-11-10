@@ -9,9 +9,7 @@
 #ifndef RED_H
 #define	RED_H
 
-#include <stdint.h>
-#include <inttypes.h>
-#include <pcap.h>
+#include "constantes.h"
 
 #define IP_HLEN sizeof(struct_ip)   /*Tamano de cabecera IP*/
 

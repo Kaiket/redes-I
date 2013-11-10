@@ -10,8 +10,7 @@
 #define	ENLACE_H
 
 #include "constantes.h"
-#include <stdint.h>
-#include <inttypes.h>
+
 
 /*Estructura para la cabecera Ethernet*/
 typedef struct __attribute__ ((__packed__)) struct_ethernet {

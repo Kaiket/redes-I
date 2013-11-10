@@ -1,7 +1,4 @@
 #include "enlace.h"
-#include "constantes.h"
-#include <string.h>
-#include <stdio.h>
 
 /*
  * Se vuelva los primeros ETH_HLEN bytes del paquete en la estructura ethernet.
