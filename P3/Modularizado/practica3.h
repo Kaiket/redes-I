@@ -132,7 +132,7 @@ u_int8_t filtrarIP(struct_ip cabeceraIP, s_filtro *filtro);
  *          ERROR, error de parámetros.
  */
 u_int8_t filtrarTPTE(struct_ip cabeceraIP, void *cabeceraTransporte, 
-                     s_filtro* filtro){
+                     s_filtro* filtro);
 
 
 /*
