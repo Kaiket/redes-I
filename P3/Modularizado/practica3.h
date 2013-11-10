@@ -64,7 +64,7 @@ int init_files();
  * Devuelve: OK si no ha habido errores.
  *           ERROR en caso de error de lectura.
  */
-int abrir_pcap(char *nombreArchivo);
+int abrir_pcap(char **argv, char *nombreArchivo, char *errbuf);
 
 /*
  * Procesa los argumentos.

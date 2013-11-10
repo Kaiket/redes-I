@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     }
     
     /*Captura de interfaz / Apertura de fichero pcap*/
-    if(abrir_pcap(nombreArchivo)){
+    if(abrir_pcap(argv, nombreArchivo, errbuf)){
         exit(EXIT_FAILURE);
     }
     
@@ -131,7 +131,7 @@ int init_files(){
 /*
  * Se abre el fichero pcap o la interfaz correspondiente.
  */
-int abrir_pcap(char *nombreArchivo){
+int abrir_pcap(char **argv, char *nombreArchivo, char *errbuf){
     
     /*Si el primer argumento comienza por "eth", se lee dicha interfaz*/
     if (!nombreArchivo) {
@@ -324,7 +324,7 @@ u_int8_t filtrarPaquete (struct_ethernet cabeceraETH, struct_ip cabeceraIP,
     }
     
     /*Filtramos por puertos*/
-    if(filtrarTPTE(cabeceraTransporte, filtro) == ERROR_FILTRO){
+    if(filtrarTPTE(cabeceraIP, cabeceraTransporte, filtro) == ERROR_FILTRO){
         return ERROR_FILTRO;
     }
     
