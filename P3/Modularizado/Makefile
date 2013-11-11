@@ -7,8 +7,17 @@ OBJ = practica3.o enlace.o red.o transporte.o
 all: $(OBJ)
 	$(CC) -o practica3 $(OBJ) -lpcap
 
+practica3: $(OBJ)
+	$(CC) -o practica3 $(OBJ) -lpcap
+
+main: $(OBJ)
+	$(CC) -o main $(OBJ) -lpcap
+
 clean:
 	$(RM) $(OBJ) practica3
+	$(RM) main
+	$(RM) *~
+	$(RM) *.h.gch
 
 # Reglas implicitas
 enlace.o:
@@ -20,3 +29,4 @@ transporte.o:
 
 practica3.o: 
 	gcc -c practica3.c practica3.h enlace.h red.h transporte.h constantes.h
+
