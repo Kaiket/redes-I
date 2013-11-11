@@ -490,11 +490,12 @@ void handleSignal(int nsignal) {
  */
 void imprimirEstadisticas(){
 
-    char* exec[4];
+    char* exec[5];
     exec[0] = "sh";
     exec[1] = "script.sh";
     exec[2] = datosIP;
     exec[3] = datosPORTS;
+    exec[4] = NULL;
 
     printf("Recuento de paquetes:\n");
     printf("\tTotal capturado: %lu\n", totalPaquetes);
