@@ -25,9 +25,17 @@
 \newpage				%Salto de página.
 
 \section{Introducción}	%Sección de introducción
-En esta prática se va a implementar un programa que analizará y caracterizará una captura de paquetes de red. 
+En esta prática se va a implementar un programa que analizará y caracterizará una captura de paquetes de red. Para ello, utilizará un fichero \textit{*.pcap} que contenga una traza o directamente una interfaz especificada, dependiendo del argumento utilizado (véase sección \ref{sec:manual}, página \pageref{sec:manual}).
 
-El análisis de los paquetes se realizará utilizando un fichero que contentga una traza o directamente una interfaz especificada, dependiendo del argumento utilizado. Ver
+De forma particular, el análisis que se va a llevar a cabo consistirá en mostrar la funcionalidad de la herramienta sobre el fichero proporcionado con el enunciado de la práctica: \textit{$practica3\_ rc1lab.pcap$}
+
+Las funciones que realizará el programa son las siguientes:
+\begin{itemize}
+\item Mostrar por pantalla los porcentajes de paquetes IP, NO IP, TCP, UDP y NO-TCP-UDP.
+\item Mostrar por pantalla el top de 5 direcciones IP activas y el top de 5 puertos activos  (ambos por paquetes y tamaño en bytes).
+\item Calcule el ECDF de la variable \textit{tamaño de paquete leido}.
+\item Calcule
+\end{itemize}
 
 
 %Apendice
@@ -35,6 +43,7 @@ El análisis de los paquetes se realizará utilizando un fichero que contentga u
 \appendix
 \renewcommand\appendixname{Anexo}
 \section{Manual de utilización del programa}
+\label{sec:manual}
 En esta sección se ofrece una breve explicación sobre la utilización del programa implementado.
 \subsection{Compilación}
 Para compilar el programa se proporciona un fichero Makefile, existen tres opciones equivalentes para la compilación del mismo utilizando el programa make:
