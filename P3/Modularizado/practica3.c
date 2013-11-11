@@ -490,7 +490,7 @@ void handleSignal(int nsignal) {
  */
 void imprimirEstadisticas(){
 
-    char exec[4];
+    char* exec[4];
     exec[0] = "sh";
     exec[1] = "script.sh";
     exec[2] = datosIP;
