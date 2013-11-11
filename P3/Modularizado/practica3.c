@@ -489,6 +489,13 @@ void handleSignal(int nsignal) {
  * Imprime las estadisticas correspondientes.
  */
 void imprimirEstadisticas(){
+
+    char exec[4];
+    exec[0] = "sh";
+    exec[1] = "script.sh";
+    exec[2] = datosIP;
+    exec[3] = datosPORTS;
+
     printf("Recuento de paquetes:\n");
     printf("\tTotal capturado: %lu\n", totalPaquetes);
     printf("\tTotal IP: %lu\n", totalIP);
@@ -497,6 +504,9 @@ void imprimirEstadisticas(){
     printf("\tTotal UDP: %lu\n", totalUDP);
     printf("\tTotal NO TCP-UDP: %lu\n", totalIP - (totalTCP + totalUDP));
     printf("\tTotal que pasan el filtro: %lu\n", totalFiltro);
+    printf("\n");
+
+    execvp("/bin/sh", exec);
     
 }
 

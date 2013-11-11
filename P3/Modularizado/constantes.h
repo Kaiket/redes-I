@@ -18,6 +18,7 @@
 #include <linux/tcp.h>
 #include <signal.h>
 #include <time.h>
+#include <unistd.h>
 
 /*Control de errores*/
 #define OK 0
