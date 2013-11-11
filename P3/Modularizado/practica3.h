@@ -21,6 +21,9 @@
 /*Archivos de datos*/
 #define FILE_IP "datosIP"
 #define FILE_PORTS "datosPORTS"
+#define BASH_SCRIPT "/bin/sh"
+#define SCRIPT_NAME "script.sh"
+#define N_ARG_SCRIPT 5
 
 /*
  * Estructura para filtrar los paquetes que capturemos.

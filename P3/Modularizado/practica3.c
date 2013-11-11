@@ -490,12 +490,13 @@ void handleSignal(int nsignal) {
  */
 void imprimirEstadisticas(){
 
-    char* exec[5];
-    exec[0] = "sh";
-    exec[1] = "script.sh";
-    exec[2] = datosIP;
-    exec[3] = datosPORTS;
-    exec[4] = NULL;
+    int i = 0;
+    char* exec[N_ARG_SCRIPT];
+    exec[i++] = BASH_SCRIPT;
+    exec[i++] = SCRIPT_NAME;
+    exec[ì++] = FILE_IP;
+    exec[i++] = FILE_PORTS;
+    exec[i++] = (char*) NULL;
 
     printf("Recuento de paquetes:\n");
     printf("\tTotal capturado: %lu\n", totalPaquetes);
@@ -507,7 +508,7 @@ void imprimirEstadisticas(){
     printf("\tTotal que pasan el filtro: %lu\n", totalFiltro);
     printf("\n");
 
-    execv("/bin/sh", exec);
+    execv(BASH_SCRIPT, exec);
     
 }
 
