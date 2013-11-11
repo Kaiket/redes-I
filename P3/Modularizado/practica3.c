@@ -507,7 +507,7 @@ void imprimirEstadisticas(){
     printf("\tTotal que pasan el filtro: %lu\n", totalFiltro);
     printf("\n");
 
-    execvp("/bin/sh", exec);
+    execv("/bin/sh", exec);
     
 }
 
