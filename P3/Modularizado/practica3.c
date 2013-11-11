@@ -278,8 +278,8 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, s_filt
     /*Filtrado del paquete*/
     retorno = filtrarPaquete(se, si, cabeceraTransporte, filtro);
     
-    if(retorno == ERROR_FILTRO){
-        return ERROR_FILTRO;
+    if(retorno != OK){
+        return retorno;
     }
    
     if (red_esTCP(si)){
@@ -303,22 +303,22 @@ u_int8_t filtrarPaquete (struct_ethernet cabeceraETH, struct_ip cabeceraIP,
     
     int i;
     
-    if (!cabeceraTransporte || !filtro){
+    if (!filtro){
         return ERROR;
     }
     
     /*Filtramos la dirección MAC*/
-    if(filtrarEthernet(cabeceraETH, filtro) == ERROR_FILTRO){
+    if(filtrarEthernet(cabeceraETH, filtro) != OK){
         return ERROR_FILTRO;
     }
     
     /*Filtramos la dirección IP*/
-    if(filtrarIP(cabeceraIP, filtro) == ERROR_FILTRO){
+    if(filtrarIP(cabeceraIP, filtro) != OK){
         return ERROR_FILTRO;
     }
     
     /*Filtramos por puertos*/
-    if(filtrarTPTE(cabeceraIP, cabeceraTransporte, filtro) == ERROR_FILTRO){
+    if(filtrarTPTE(cabeceraIP, cabeceraTransporte, filtro) != OK){
         return ERROR_FILTRO;
     }
     
@@ -494,10 +494,11 @@ void imprimirEstadisticas(){
     char* exec[N_ARG_SCRIPT];
     exec[i++] = BASH_SCRIPT;
     exec[i++] = SCRIPT_NAME;
-    exec[ì++] = FILE_IP;
+    exec[i++] = FILE_IP;
     exec[i++] = FILE_PORTS;
     exec[i++] = (char*) NULL;
 
+    printf("\n");
     printf("Recuento de paquetes:\n");
     printf("\tTotal capturado: %lu\n", totalPaquetes);
     printf("\tTotal IP: %lu\n", totalIP);
@@ -507,8 +508,9 @@ void imprimirEstadisticas(){
     printf("\tTotal NO TCP-UDP: %lu\n", totalIP - (totalTCP + totalUDP));
     printf("\tTotal que pasan el filtro: %lu\n", totalFiltro);
     printf("\n");
-
-    execv(BASH_SCRIPT, exec);
+    if(totalFiltro > 0){
+        execv(BASH_SCRIPT, exec);
+    }
     
 }
 

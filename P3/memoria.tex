@@ -1,20 +1,29 @@
-\documentclass[a4]{article}
+\documentclass[a4paper, 11pt]{article}	%Tipo de documento y opciones.
 
-\usepackage[spanish]{babel}
-\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}				%Idioma en el que se va a escibir.
+\usepackage[utf8]{inputenc}				%Reconocimiento de caracteres como tildes.
+\usepackage{fancyhdr}					%Paquete usado para la cabecera y el pie de página.
 
-\title{Práctica 3\\Redes de computadores}
-\author{Enrique Cabrerizo Fernández\\Guillermo Ruiz Álvarez}
-\date{14/11/2013}
+%Creamos comandos para los autores.
+\newcommand{\enriquename}{Enrique Cabrerizo Fernández}
+\newcommand{\guillermoname}{Guillermo Ruiz Álvarez}
 
+\title{Práctica 3\\Redes de computadores}						%Título.
+\author{\enriquename \and \guillermoname}						%Autores.
+\date{14/11/2013}												%Fecha.
 
+\pagestyle{fancyplain}					%Estilo: Usar cabeceras.
+\fancyhf{}								%Borrar formato estándar.
+\lhead{ \fancyplain{}{\enriquename} }	%Nombre de Enrique a la izquierda de la cabecera.
+\rhead{ \fancyplain{}{\guillermoname} }	%Nombre de Guillermo a la derecha de la cabecera.
+\cfoot{ \fancyplain{}{\thepage} }		%Número de la página centrada en el pie.
 
-\begin{document}
-\maketitle
-\newpage
-\tableofcontents
-\newpage
+\begin{document}		%Comienza documento.
+\maketitle			%Página de título.
+\newpage				%Salto de página.
+\tableofcontents		%Página de índice.
+\newpage				%Salto de página.
 
-\section{Introducción}
+\section{Introducción}	%Sección de introducción
 
 \end{document}
