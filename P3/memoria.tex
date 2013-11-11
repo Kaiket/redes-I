@@ -25,5 +25,43 @@
 \newpage				%Salto de página.
 
 \section{Introducción}	%Sección de introducción
+En esta prática se va a implementar un programa que analizará y caracterizará una captura de paquetes de red. 
+
+El análisis de los paquetes se realizará utilizando un fichero que contentga una traza o directamente una interfaz especificada, dependiendo del argumento utilizado. Ver
+
+
+%Apendice
+\newpage
+\appendix
+\renewcommand\appendixname{Anexo}
+\section{Manual de utilización del programa}
+En esta sección se ofrece una breve explicación sobre la utilización del programa implementado.
+\subsection{Compilación}
+Para compilar el programa se proporciona un fichero Makefile, existen tres opciones equivalentes para la compilación del mismo utilizando el programa make:
+\begin{itemize}
+\item \textbf{make all} compila el programa y le da el nombre \textit{practica3}
+\item \textbf{make practica3} compila el programa y le da el nombre \textit{practica3}
+\item \textbf{make main} compila el programa y le da el nombre \textit{main}
+\end{itemize}
+
+\subsection{Ejecución}
+Para ejecutar el programa se utiliza la siguiente estructura:
+
+\begin{center}
+\textbf{./practica3 INTERF $[<$filtro$>$ $<$dato a filtrar$>]$}
+\end{center}
+
+\noindent Donde:\\
+\textbf{INTERF} es el fichero pcap o interfaz ethernet (ethX con $X \in [0,9]$).\\
+\textbf{$[<$filtro$>$ $<$dato a filtrar$>]:$} puede ser:\\
+\indent -ipo x.x.x.x : filtro de IP de origen x.x.x.x ($x \in [0, 255]$)\\
+\indent -ipd x.x.x.x : filtro de IP de destino x.x.x.x ($x \in [0, 255]$)\\
+\indent -po x : filtro de puerto de origen x ($x \in [0,65536]$)\\
+\indent -pd x : filtro de puerto de destino x ($x \in [0,65536]$)\\
+\indent -etho xx:xx:xx:xx:xx:xx : filtro de MAC origen ($x \in [00,FF]$)\\
+\indent -ethd xx:xx:xx:xx:xx:xx : filtro de MAX destino ($x \in [00,FF]$)\\
+
+Se pueden aplicar varios filtros a la vez y el orden de los mismos no se tiene en cuenta.
+Si un filtro IP es 0.0.0.0, un filtro de puertos es 0, o un filtro ethernet es 00:00:00:00:00:00 se considerará inexistente, es decir, no se aplicará dicho filtro.
 
 \end{document}
