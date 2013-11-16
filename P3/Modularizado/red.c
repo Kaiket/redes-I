@@ -116,7 +116,7 @@ void exportIPinfo(FILE* archivo, struct pcap_pkthdr* cabecera, struct_ip si) {
         return;
     }
     
-    /*Imprimimos en el archivo el tiempo, tamaño e IP origen*/
+    /*Imprimimos en el archivo el tiempo, tamaño, IP Origen e IP Destino*/
     fprintf(archivo, "%lu\t%lu\t%lu\t" ,cabecera->ts.tv_sec, 
                                         cabecera->ts.tv_usec, 
                                         cabecera->len);
@@ -126,13 +126,7 @@ void exportIPinfo(FILE* archivo, struct pcap_pkthdr* cabecera, struct_ip si) {
             fprintf(archivo,".");
         }
     }
-    fprintf(archivo, "\n");
-    
-    /*Imprimimos en el archivo el tiempo, tamaño e IP destino*/
-    fprintf(archivo, "%lu\t%lu\t%lu\t" ,cabecera->ts.tv_sec,
-                                        cabecera->ts.tv_usec, 
-                                        cabecera->len);
-    
+    fprintf(archivo, "\t");
     for (i=0; i<IP_ALEN; i++) {
         fprintf(archivo,"%u", si.destino[i]);
         if (i!=IP_ALEN-1){ 
@@ -140,4 +134,5 @@ void exportIPinfo(FILE* archivo, struct pcap_pkthdr* cabecera, struct_ip si) {
         }
     }
     fprintf(archivo, "\n");
+    
 }

@@ -74,17 +74,11 @@ void exportTPTinfo(FILE* archivo, struct pcap_pkthdr* cabecera,
         return;
     }
     
-    /*Origen*/
-    fprintf(archivo, "%lu\t%lu\t%lu\t%s\t%lu\n",(cabecera->ts).tv_sec, 
+    /*Imprimimos al archivo con formato: "tiempo(segundos) tiempo(ms) tamaño tipo puertoOrigen puertoDestino*/
+    fprintf(archivo, "%lu\t%lu\t%lu\t%s\t%lu\t%lu\n",(cabecera->ts).tv_sec, 
                                                 (cabecera->ts).tv_usec, 
                                                  cabecera->len, 
                                                  aux, 
-                                                 orig);
-    /*Destino*/
-    fprintf(archivo, "%lu\t%lu\t%lu\t%s\t%lu\n",(cabecera->ts).tv_sec, 
-                                                (cabecera->ts).tv_usec, 
-                                                 cabecera->len, 
-                                                 aux, 
-                                                 dest);
+                                                 orig, dest);
     return;
 }

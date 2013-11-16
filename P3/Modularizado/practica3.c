@@ -74,9 +74,8 @@ int main(int argc, char **argv) {
         ++totalPaquetes;
         paquete = (u_int8_t*) pcap_next(descr, &cabecera);
     }
-
-    imprimirEstadisticas();
     salidaOrdenada();
+    imprimirEstadisticas();
     return EXIT_SUCCESS;
 }
 
@@ -311,12 +310,10 @@ u_int8_t filtrarPaquete (struct_ethernet cabeceraETH, struct_ip cabeceraIP,
     if(filtrarEthernet(cabeceraETH, filtro) != OK){
         return ERROR_FILTRO;
     }
-    
     /*Filtramos la dirección IP*/
     if(filtrarIP(cabeceraIP, filtro) != OK){
         return ERROR_FILTRO;
     }
-    
     /*Filtramos por puertos*/
     if(filtrarTPTE(cabeceraIP, cabeceraTransporte, filtro) != OK){
         return ERROR_FILTRO;
@@ -420,6 +417,7 @@ u_int8_t filtrarIP(struct_ip cabeceraIP, s_filtro *filtro){
             }
         }
     }
+    return OK;
 }
 
 
@@ -480,8 +478,8 @@ u_int8_t filtrarTPTE(struct_ip cabeceraIP, void *cabeceraTransporte, s_filtro* f
  */
 void handleSignal(int nsignal) {
     printf("\nControl+C pulsado.\n");
-    imprimirEstadisticas();
     salidaOrdenada();
+    imprimirEstadisticas();
     exit(EXIT_SUCCESS);
 }
 
