@@ -498,13 +498,26 @@ void imprimirEstadisticas(){
 
     printf("\n");
     printf("Recuento de paquetes:\n");
+
     printf("\tTotal capturado: %lu (100%)\n", totalPaquetes);
-    printf("\tTotal IP: %lu (%.02lf%)\n", totalIP, (double) 100*totalIP/totalPaquetes);
-    printf("\tTotal NO IP: %lu (%.02lf%)\n", totalPaquetes - totalIP, (double) 100*(1-totalIP/totalPaquetes));
-    printf("\tTotal TCP: %lu (%.02lf%)\n", totalTCP, (double) 100*totalTCP/totalPaquetes);
-    printf("\tTotal UDP: %lu (%.02lf%)\n", totalUDP, (double) 100*totalUDP/totalPaquetes);
-    printf("\tTotal NO TCP-UDP: %lu (%.02lf%)\n", totalIP - (totalTCP + totalUDP), (double) 100*(1-(totalTCP+totalUDP)/totalPaquetes));
-    printf("\tTotal que pasan el filtro: %lu (%.02lf%)\n", totalFiltro, (double) 100*totalFiltro/totalPaquetes);
+
+    printf("\tTotal IP: %lu ", totalIP);
+    printf("(%.02Lf%)\n", (long double) 100*totalIP/totalPaquetes);
+
+    printf("\tTotal NO IP: %lu ", totalPaquetes - totalIP);
+    printf("(%.02Lf%)\n", (long double) 100*(1-totalIP/totalPaquetes));
+
+    printf("\tTotal TCP: %lu ", totalTCP);
+    printf("(%.02Lf%)\n", (long double) 100*totalTCP/totalPaquetes);
+
+    printf("\tTotal UDP: %lu ", totalUDP);
+    printf("(%.02Lf%)\n", (long double) 100*totalUDP/totalPaquetes);
+
+    printf("\tTotal NO TCP-UDP: %lu ", totalPaquetes - (totalTCP + totalUDP));
+    printf("(%.02Lf%)\n", (long double) 100*(1-(totalTCP+totalUDP)/totalPaquetes));
+
+    printf("\tTotal que pasan el filtro: %lu ", totalFiltro);
+    printf("(%.02Lf%)\n", totalFiltro, (long double) 100*totalFiltro/totalPaquetes);
     printf("\n");
     if(totalFiltro > 0){
         execv(BASH_SCRIPT, exec);
