@@ -3,6 +3,7 @@
 \usepackage[spanish]{babel}				%Idioma en el que se va a escibir.
 \usepackage[utf8]{inputenc}				%Reconocimiento de caracteres como tildes.
 \usepackage{fancyhdr}					%Paquete usado para la cabecera y el pie de página.
+\usepackage{graphicx}					%Importar imágenes.
 
 %Creamos comandos para los autores.
 \newcommand{\enriquename}{Enrique Cabrerizo Fernández}
@@ -42,11 +43,21 @@ De forma particular, el análisis que se va a llevar a cabo consistirá en mostr
 
 \section{Análisis de la traza}
 \subsection{Porcentajes de protocolos}
-En la figura XXXXXXXXXXXXX se muestran los porcentajes de los paquetes IP, no Eth-IP, UDP, TCP y no UDP-TCP.
+En la figura \ref{fig:recuento} se muestran los porcentajes de los paquetes IP, no Eth-IP, UDP, TCP y no UDP-TCP.
+
+%Inclusion de imagen.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{recuento.png}
+\caption{Recuento y porcentajes de protocolos de paquetes.}
+\label{fig:recuento}
+\end{figure}
 
 Se puede observar que el $12,15\%$ de los paquetes (6423 paquetes) no son Eth-IP. Un análisis posterior con Wireshark nos dirá que su tipo de ethernet corresponde a \textit{802.1Q Virtual LAN (0x8100)}.
 
 El resto de paquetes son todos TCP/IP, los dos protocolos más importantes del conjunto de protocolos de internet.
+
+El campo \textit{Total que pasan el filtro} cuenta aquellos paquetes que pasan el filtro especificado mediante los argumentos. El filtro básico, para el que no se utiliza ningún argumento adicional, es que el paquete sea Eth-IP.
 
 \subsection{Popularidad de direcciones IP y puertos}
 En la figura XXXXXXXXXXXXX se muestra el Top 5 de direcciones IP activas y de puertos, clasificado en \textit{número de paquetes, tamaño en bytes, origen} y \textit{destino}.
