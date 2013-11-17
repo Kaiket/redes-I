@@ -4,6 +4,7 @@
 \usepackage[utf8]{inputenc}				%Reconocimiento de caracteres como tildes.
 \usepackage{fancyhdr}					%Paquete usado para la cabecera y el pie de página.
 \usepackage{graphicx}					%Importar imágenes.
+\usepackage{float}						%Posicionamiento de imágenes.
 
 %Creamos comandos para los autores.
 \newcommand{\enriquename}{Enrique Cabrerizo Fernández}
@@ -43,10 +44,10 @@ De forma particular, el análisis que se va a llevar a cabo consistirá en mostr
 
 \section{Análisis de la traza}
 \subsection{Porcentajes de protocolos}
-En la figura \ref{fig:recuento} se muestran los porcentajes de los paquetes IP, no Eth-IP, UDP, TCP y no UDP-TCP.
+En la \textbf{Figura \ref{fig:recuento}} se muestran los porcentajes de los paquetes IP, no Eth-IP, UDP, TCP y no UDP-TCP.
 
 %Inclusion de imagen.
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{recuento.png}
 \caption{Recuento y porcentajes de protocolos de paquetes.}
@@ -60,9 +61,25 @@ El resto de paquetes son todos TCP/IP, los dos protocolos más importantes del c
 El campo \textit{Total que pasan el filtro} cuenta aquellos paquetes que pasan el filtro especificado mediante los argumentos. El filtro básico, para el que no se utiliza ningún argumento adicional, es que el paquete sea Eth-IP.
 
 \subsection{Popularidad de direcciones IP y puertos}
-En la figura XXXXXXXXXXXXX se muestra el Top 5 de direcciones IP activas y de puertos, clasificado en \textit{número de paquetes, tamaño en bytes, origen} y \textit{destino}.
+En la \textbf{Figura \ref{fig:popIP}} se muestra el top 5 de direcciones IP activas y en la \textbf{Figura \ref{fig:popPuertos}} se muestra el top 5 de puertos activos, ambos clasificados por \textit{número de paquetes, tamaño en bytes, origen} y \textit{destino}.
+
+%Inclusion de imagen.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{popularidadIP.png}
+\caption{Popularidad de direcciones IP.}
+\label{fig:popIP}
+\end{figure}
 
 La razón por la cual las clasificaciones por paquetes no coinciden con las clasificaciones por tamaños es que muchos de los paquetes enviados o recibidos por algunas direcciones o puertos son asentimientos (ACK). Por tanto, aunque una dirección o puerto pueda recibir o enviar muchos paquetes, si un porcentaje elevado de estos son asentimientos sólo ocuparan 54 bytes (el tamaño mínimo de una trama ethernet), es decir, que se habrán enviado o recibido muchos paquetes pero de poco tamaño.
+
+%Inclusion de imagen.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{popularidadPuertos.png}
+\caption{Popularidad de puertos.}
+\label{fig:popPuertos}
+\end{figure}
 
 \subsection{Tamaños de los paquetes}
 Para analizar la variable \textit{tamaño del paquete capturado} se ha un histograma y un ECDF de  dicha variable sobre la traza. (Véase figura XXXXXXXXXXXXX).
@@ -74,7 +91,7 @@ Se analizará el ancho de banda a nivel 2 cada segundo por sentido asumiendo que
 Para analizar los tiempos entre llegadas de paquetes de un flujo, se asumirá el flujo UDP con puertos de origen y destino 24704 y 27088 respectivamente. Dicho análisis se llevará a cabo con la ayuda de Wireshark dado que la pila de protocolos usada no es Eth-IP, sino VLAN.
 
 %Apendice
-\newpage
+\clearpage
 \appendix
 \renewcommand\appendixname{Anexo}
 \section{Manual de utilización del programa}
