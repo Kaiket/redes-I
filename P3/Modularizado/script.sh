@@ -59,6 +59,32 @@
 
 #ECDF
         cut -f 3 $1 | awk '{data[$1]+=1} END {for (elem in data) {print elem, data[elem]}}' | sort -nk 1 > histTam
-        cat histTam | awk 'BEGIN {data[0]=0; ant=0; cont=0} {data[$1]=$2+data[ant]; ant=$1; cont+=$2} END {for (elem in data) {print elem, data[elem]/cont}}' | sort -nk 1 | sed '1d' > ECDFTam
-        
+        cat histTam | awk 'BEGIN {data[0]=0; ant=0; tot=0} {data[$1]=$2+data[ant]; ant=$1; tot+=$2} END {for (elem in data) {print elem, data[elem]/tot}}' | sort -nk 1 | sed '1d' > ECDFTam
+        #creamos un carpeta si no existe, si existe borramos el contenido e introducimos los archivos generados
+        if [ -d "ECDFTamanyos" ]; then
+            if [ "$(ls -A ECDFTamanyos)" ]; then
+                rm ECDFTamanyos/*
+            fi
+        else
+            mkdir ECDFTamanyos
+        fi
+        mv ECDFTam histTam ECDFTamanyos/
+
+#Throughput
+        cut -f 1,3,4,5 $1 | sort -k 4,4 -k 5,5 -k 1,1n | awk -f throughput.awk
+        for i in T_* #ordenamos los archivos que ha producido el script awk
+        do
+            cat $i | sort -nk 1 > $i
+        done
+        #creamos un carpeta si no existe, si existe borramos el contenido e introducimos los archivos generados
+        if [ -d "throughput" ]; then
+            if [ "$(ls -A throughput)" ]; then
+                rm throughput/*
+            fi
+        else
+            mkdir throughput
+        fi
+        mv T_* throughput/
+
+#Flujos
         
