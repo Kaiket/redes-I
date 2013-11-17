@@ -37,6 +37,8 @@
 #define ETH_FRAME_MAX 1514          /*Tamaño maximo trama ethernet (sin CRC).*/
 #define ETH_FRAME_MIN 60            /*Tamaño minimo trama ethernet (sin CRC).*/
 #define ETH_IPTYPE 0x0800           /*Tipo de ethernet IP */
+#define VLAN_IPTYPE 0x8100          /*Tipo Vlan IP*/
+#define VLAN_IPOFFSET 4             /*Offset de la direccion IP vlan*/
 #define IP_ALEN 4                   /*Tamano de direccion IP*/
 #define PROTOCOL_TCP 6              /*Protocolo TCP*/
 #define PROTOCOL_UDP 17             /*Protocolo UDP*/

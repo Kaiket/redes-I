@@ -102,37 +102,3 @@ int scan_ip (u_int8_t* IP, char* cadena) {
     }  
     return OK;
 }
-
-/*
- * Imprimimos en el archivo la información de tiempo, tamaño e IP para origen y
- * destino
- */
-void exportIPinfo(FILE* archivo, struct pcap_pkthdr* cabecera, struct_ip si) {
-    
-    int i;
-    
-    /*Control de errores*/
-    if (!archivo || !cabecera){
-        return;
-    }
-    
-    /*Imprimimos en el archivo el tiempo, tamaño, IP Origen e IP Destino*/
-    fprintf(archivo, "%lu\t%lu\t%lu\t" ,cabecera->ts.tv_sec, 
-                                        cabecera->ts.tv_usec, 
-                                        cabecera->len);
-    for (i=0; i<IP_ALEN; i++) {
-        fprintf(archivo,"%u", si.origen[i]);
-        if (i!=IP_ALEN-1){ 
-            fprintf(archivo,".");
-        }
-    }
-    fprintf(archivo, "\t");
-    for (i=0; i<IP_ALEN; i++) {
-        fprintf(archivo,"%u", si.destino[i]);
-        if (i!=IP_ALEN-1){ 
-            fprintf(archivo,".");
-        }
-    }
-    fprintf(archivo, "\n");
-    
-}

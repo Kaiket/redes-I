@@ -45,7 +45,9 @@ void printEthernet(struct_ethernet cabecera) {
  * Comprueba el campo de tipo de ethernet para ver si el paquete es IP o no.
  */
 int enlace_esIP(struct_ethernet se){
-    if(ntohs(se.tipoEth) == ETH_IPTYPE){
+    int tipo;
+    tipo=ntohs(se.tipoEth);
+    if(tipo == ETH_IPTYPE || tipo==VLAN_IPTYPE){
         return TRUE;
     }
     return FALSE;

@@ -75,11 +75,4 @@ int red_esUDP(struct_ip si);
  */
 int scan_ip (u_int8_t* IP, char* cadena);
 
-/*
- * Escribe la información de la cabecera IP al fichero archivo.
- * Recibe: Puntero al archivo, cabecera pcap del paquete, estructura ip.
- */
-void exportIPinfo(FILE* archivo, struct pcap_pkthdr* cabecera, struct_ip si);
-
-
 #endif	/* RED_H */

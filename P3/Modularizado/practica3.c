@@ -7,7 +7,7 @@
 
 /*Variables globales*/
 pcap_t* descr;                  /*Descriptor del fichero pcap*/
-FILE *datosIP, *datosPORTS;     /*Descriptor de los ficheros IP y puertos*/
+FILE *datos;     /*Descriptor de los ficheros IP y puertos*/
 u_int64_t totalPaquetes = 0;    /*Total de paquetes de la traza*/
 u_int64_t totalFiltro = 0;      /*Total de paquetes que pasan el filtro*/
 u_int64_t totalIP = 0;          /*Total de paquetes IP de la traza*/
@@ -107,14 +107,8 @@ int init_files(){
     
     /*Se abren los archivos en los que se guardan los datos usados para extraer 
       las estadísticas*/
-    if ((datosIP = fopen(FILE_IP, "w+")) == NULL) {
-        printf("Error: Fallo al crear/abrir el archivo \"%s\"", FILE_IP);
-        return ERROR;
-    }
-    
-    if ((datosPORTS = fopen(FILE_PORTS, "w+")) == NULL) {
-        printf("Error: Fallo al crear/abrir el archivo \"%s\"", FILE_PORTS);
-        fclose(datosIP);
+    if ((datos = fopen(DATA_FILE, "w+")) == NULL) {
+        printf("Error: Fallo al crear/abrir el archivo \"%s\"", DATA_FILE);
         return ERROR;
     }  
     
@@ -243,6 +237,7 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, s_filt
     struct struct_udp su;
     u_int8_t tamano_ip, retorno;
     void* cabeceraTransporte = NULL;
+    int offset_ip=0;
     
     /*Control de errores*/
     if (!paquete || !cabecera || !filtro) {
@@ -258,9 +253,9 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, s_filt
     } else{
         ++totalIP;
     }
-
-    si = leerIP(paquete+ETH_HLEN);
-    tamano_ip=(si.version_IHL&0x0F)*4;
+    if (ntohs(se.tipoEth)==VLAN_IPTYPE) offset_ip=VLAN_IPOFFSET;
+    si = leerIP(paquete+ETH_HLEN+offset_ip);
+    tamano_ip=(si.version_IHL&0x0F)*4+offset_ip;
     
     /*Comprobación Transporte*/
     if (red_esTCP(si)){
@@ -280,18 +275,87 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, s_filt
     if(retorno != OK){
         return retorno;
     }
-   
-    if (red_esTCP(si)){
-        exportTPTinfo(datosPORTS, cabecera, PROTOCOL_TCP, (void*)(&st));
-    }
     
-    else if(red_esUDP(si)){
-        exportTPTinfo(datosPORTS, cabecera, PROTOCOL_UDP, (void*)(&su));
-    }
-    
-    exportIPinfo(datosIP, cabecera, si);
+    exportInfo(datos, cabecera, se, si, cabeceraTransporte);
     return OK;
 }
+
+
+/*
+ * Imprime la informacion relevante de un paquete en el fichero pasado como argumento (tiempo, tamaño, MACs, IPs y puertos)
+ */
+void exportInfo(FILE* archivo, struct pcap_pkthdr* cabecera, struct_ethernet se, struct_ip si, void* st_su) {
+    
+    u_int16_t p_orig, p_dest;
+    int i;
+    char *tcp="tcp";
+    char *udp="udp"; 
+    char *aux;
+    
+    /*Control de errores*/
+    if (!archivo || !cabecera || !st_su){
+        return;    
+    }
+    
+    /*Caso Transporte TCP*/
+    if (red_esTCP(si)) {
+        p_orig=ntohs(((struct_tcp*)st_su)->puertoOrigen);
+        p_dest=ntohs(((struct_tcp*)st_su)->puertoDestino);
+        aux=tcp;
+    }
+    /*Caso Transporte UDP*/
+    else if (red_esUDP(si)) {
+        p_orig=ntohs(((struct_udp*)st_su)->puertoOrigen);
+        p_dest=ntohs(((struct_udp*)st_su)->puertoDestino);
+        aux=udp;
+    }
+    /*No se contemplan mas casos.*/
+    else {
+        return;
+    }
+    
+    /*Imprimimos al archivo con formato: "tiempo(segundos) tiempo(ms) tamaño*/
+    fprintf(archivo, "%lu\t%lu\t%lu\t",(cabecera->ts).tv_sec, 
+                                                (cabecera->ts).tv_usec, 
+                                                 cabecera->len);
+    /*Imprimimos las MAC origen y destino*/
+    for (i=0; i<ETH_ALEN; i++) {
+        fprintf(archivo,"%02x", se.origen[i]);
+        if (i!=ETH_ALEN-1){ 
+            fprintf(archivo,":");
+        }
+    }
+    fprintf(archivo, "\t");
+    for (i=0; i<ETH_ALEN; i++) {
+        fprintf(archivo,"%02x", se.destino[i]);
+        if (i!=ETH_ALEN-1){ 
+            fprintf(archivo,":");
+        }
+    }
+    fprintf(archivo, "\t");
+    
+    /*Imprimimos las IP origen y destino*/
+    for (i=0; i<IP_ALEN; i++) {
+        fprintf(archivo,"%u", si.origen[i]);
+        if (i!=IP_ALEN-1){ 
+            fprintf(archivo,".");
+        }
+    }
+    fprintf(archivo, "\t");
+    for (i=0; i<IP_ALEN; i++) {
+        fprintf(archivo,"%u", si.destino[i]);
+        if (i!=IP_ALEN-1){ 
+            fprintf(archivo,".");
+        }
+    }
+    
+    /*Imprimimos tipo de protocolo de TPT, puerto origen y destino*/
+    fprintf(archivo, "\t%s\t%lu\t%lu", aux, p_orig, p_dest);
+    
+    fprintf(archivo, "\n");
+    return;
+}
+
 
 /*
  * Filtra el paquete por direccion de ip y por puertos en funcion del contenido
@@ -500,8 +564,7 @@ void imprimirEstadisticas(){
     
     exec[i++] = BASH_SCRIPT;
     exec[i++] = SCRIPT_NAME;
-    exec[i++] = FILE_IP;
-    exec[i++] = FILE_PORTS;
+    exec[i++] = DATA_FILE;
     exec[i++] = (char*) NULL;
 
 
@@ -558,7 +621,6 @@ void imprimirAyudaPrograma() {
  * Cierra los ficheros necesarios.
  */
 void salidaOrdenada(){
-    fclose(datosIP);
-    fclose(datosPORTS);
+    fclose(datos);
     pcap_close(descr);
 }

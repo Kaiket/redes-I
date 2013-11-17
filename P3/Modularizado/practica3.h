@@ -19,11 +19,10 @@
 #define F_ETH_D    "-ethd" /*Argumento para filtrar por puerto de destino*/
 
 /*Archivos de datos*/
-#define FILE_IP "datosIP"
-#define FILE_PORTS "datosPORTS"
+#define DATA_FILE "datos"
 #define BASH_SCRIPT "/bin/sh"
 #define SCRIPT_NAME "script.sh"
-#define N_ARG_SCRIPT 5
+#define N_ARG_SCRIPT 4
 
 /*
  * Estructura para filtrar los paquetes que capturemos.
@@ -90,6 +89,13 @@ int procesarArgumentos(int argc, char** argv, s_filtro* filtro,
  */
 u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, 
                          s_filtro *filtro);
+
+/*
+ * Imprime la información de la cabecera de transporte.
+ * Recibe: Puntero a archivo en el que imprimir, cabecera pcap del paquete,
+ *         cabecera ethernet, cabecera ip y cabecera de transporte del paquete
+ */
+void exportInfo(FILE* archivo, struct pcap_pkthdr* cabecera, struct_ethernet se, struct_ip si, void* st_su);
 
 /*
  * Filtra un paquete en función de la direccion MAC, IP y de

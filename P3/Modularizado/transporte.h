@@ -76,14 +76,4 @@ struct_udp leerUDP(u_int8_t* cabeceraUDP);
 void printUDP(struct_udp cabecera);
 
 
-/*
- * Imprime la información de la cabecera de transporte.
- * Recibe: Puntero a archivo en el que imprimir, cabecera pcap del paquete,
- *         entero que indica el tipo de transporte, puntero a void que apunta
- *         a la estructura del tipo de cabecera indicado.
- */
-void exportTPTinfo(FILE* archivo, struct pcap_pkthdr* cabecera, 
-                   int tipo_tpt, void* st_su);
-
-
 #endif	/* TRANSPORTE_H */
