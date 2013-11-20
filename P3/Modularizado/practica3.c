@@ -578,7 +578,7 @@ void imprimirEstadisticas(){
     printf("(%.02Lf%)\n", porcIP);
 
     printf("\tTotal NO IP: %lu ", totalPaquetes - totalIP);
-    printf("(%.02Lf%)\n", porcNOIP);
+    printf("(%.02Lf%)\n", porcNOIP > 0? porcNOIP : -porcNOIP);
 
     printf("\tTotal TCP: %lu ", totalTCP);
     printf("(%.02Lf%)\n", porcTCP);
@@ -587,7 +587,7 @@ void imprimirEstadisticas(){
     printf("(%.02Lf%)\n", porcUDP);
 
     printf("\tTotal NO TCP-UDP: %lu ", totalPaquetes - (totalTCP + totalUDP));
-    printf("(%.02Lf%)\n", porcNOTCPUDP);
+    printf("(%.02Lf%)\n", porcNOTCPUDP > 0? porcNOTCPUDP : -porcNOTCPUDP);
 
     printf("\tTotal que pasan el filtro: %lu ", totalFiltro);
     printf("(%.02Lf%)\n", porcFiltro);
