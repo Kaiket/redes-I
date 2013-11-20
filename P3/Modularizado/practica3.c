@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     while (paquete) {
         /*Analisis del paquete*/
         if ((retorno = analizarPaquete(paquete, &cabecera, &filtro)) == ERROR) {
-            printf("Error al analizar el paquete %lu; %s %d.\n", __FILE__, __LINE__);
+            printf("Error al analizar el paquete %lu; %s %d.\n", totalPaquetes, __FILE__, __LINE__);
             exit(EXIT_FAILURE);
         }
         if(retorno == OK){
