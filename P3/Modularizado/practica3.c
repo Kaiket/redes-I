@@ -250,7 +250,7 @@ u_int8_t analizarPaquete(u_int8_t* paquete, struct pcap_pkthdr* cabecera, s_filt
     /*Comprobacion RED*/
     if(!enlace_esIP(se)){
         return ERROR_DESCARTE;
-    } else{
+    } else if(ntohs(se.tipoEth==ETH_IPTYPE)){
         ++totalIP;
     }
     if (ntohs(se.tipoEth)==VLAN_IPTYPE) offset_ip=VLAN_IPOFFSET;
