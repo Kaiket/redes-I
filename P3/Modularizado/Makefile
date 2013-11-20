@@ -20,6 +20,7 @@ clean:
 	$(RM) *.h.gch
 	$(RM) -rf throughput/
 	$(RM) -rf ECDFTamanyos/ 
+	$(RM) -rf flujos/
 # Reglas implicitas
 enlace.o:
 	gcc -c enlace.c enlace.h constantes.h
