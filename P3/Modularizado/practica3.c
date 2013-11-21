@@ -614,7 +614,7 @@ void imprimirAyudaPrograma() {
     printf("\n");
     printf("Se pueden aplicar varios filtros a la vez. Ejemplo: ./practica3 -ipo 127.0.0.1 -po 65500\n");
     printf("Si la direccion IP especificada es 0.0.0.0 o el puerto es el 0 se considera que no se filtra\n");
-    printf("En caso de haber compilado con make main se sustituye ./practica3 por ./main");
+    printf("En caso de haber compilado con make main se sustituye ./practica3 por ./main\n");
 }
 
 /*
