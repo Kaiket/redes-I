@@ -58,7 +58,7 @@ Se puede observar que el $12,15\%$ de los paquetes (6423 paquetes) no son Eth-IP
 
 El resto de paquetes son todos TCP/IP, los dos protocolos más importantes del conjunto de protocolos de internet.
 
-El campo \textit{Total que pasan el filtro} cuenta aquellos paquetes que pasan el filtro especificado mediante los argumentos. El filtro básico, para el que no se utiliza ningún argumento adicional, es que el paquete sea Eth-IP.
+El campo \textit{Total que pasan el filtro} cuenta aquellos paquetes que pasan el filtro especificado mediante los argumentos. El filtro básico, para el que no se utiliza ningún argumento adicional, es que el paquete sea IP (tanto Eth-IP como VLAN-IP).
 
 \subsection{Popularidad de direcciones IP y puertos}
 En la \textbf{Figura \ref{fig:popIP}} se muestra el top 5 de direcciones IP activas y en la \textbf{Figura \ref{fig:popPuertos}} se muestra el top 5 de puertos activos, ambos clasificados por \textit{número de paquetes, tamaño en bytes, origen} y \textit{destino}.
@@ -71,7 +71,7 @@ En la \textbf{Figura \ref{fig:popIP}} se muestra el top 5 de direcciones IP acti
 \label{fig:popIP}
 \end{figure}
 
-La razón por la cual las clasificaciones por paquetes no coinciden con las clasificaciones por tamaños es que muchos de los paquetes enviados o recibidos por algunas direcciones o puertos son asentimientos (ACK). Por tanto, aunque una dirección o puerto pueda recibir o enviar muchos paquetes, si un porcentaje elevado de estos son asentimientos sólo ocuparan 54 bytes (el tamaño mínimo de una trama ethernet), es decir, que se habrán enviado o recibido muchos paquetes pero de poco tamaño.
+Como se puede observar, la popularidad en paquetes y en bytes no tiene por qué coincidir. Esto es obvio dado que se pueden enviar o recibir paquetes de distintos tamaños, particularmente, de entre 54 y 1514 bytes. Por ejemplo, si una dirección o puerto envía diez asentimientos (ACK) estará enviando diez paquetes de 54 bytes (el tamaño mínimo de la trama ethernet), que será menor en tamaño que un paquete de 1514 bytes.
 
 %Inclusion de imagen.
 \begin{figure}[H]
