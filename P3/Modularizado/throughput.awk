@@ -16,6 +16,9 @@ BEGIN {
 	if ($3!=broadcast && $4!=broadcast) {
 		if ((antOrig!=$3) || (antDest!=$4)) { #hemos cambiado de par de direcciones, volcamos a fichero
 			for (i=0;i<=max;++i) {
+				if (datos[i]<=0) {
+					datos[i]=0
+				}
 				printf i "\t" datos[i] "\n" > ("T_" antOrig "_" antDest)
 				datos[i]=0
 			}
