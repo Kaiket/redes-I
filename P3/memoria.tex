@@ -111,7 +111,7 @@ Los paquetes de 54 bytes se corresponden con asentimientos, que se utilizan para
 En conclusión, hay una cantidad considerable de paquetes que son asenimientos o tráfico UDP y la gran mayoría del resto de datos que se quieren enviar han sido fragmentados en paquetes de 1514 bytes y en paquetes de tamaño variable que contienen el resto de dicha fragmentación.
 
 \subsection{Ancho de banda a nivel 2 (Throughput)}
-Tras el ancho de banda a nivel 2 cada segundo por sentido asumiendo que la dirección Ethernet origen es \textit{00:55:22:af:c6:37} y descartando el tráfico broadcast obtenemos una figura con la representación del throughput (\textbf{Figura \ref{fig:throughput}})
+Tras analizar el ancho de banda a nivel 2 cada segundo por sentido asumiendo que la dirección Ethernet origen es \textit{00:55:22:af:c6:37} y descartando el tráfico broadcast obtenemos una figura con la representación del throughput (\textbf{Figura \ref{fig:throughput}})
 
 %Inclusion de imagen.
 \begin{figure}[H]
@@ -186,5 +186,17 @@ Para ejecutar el programa se utiliza la siguiente estructura:
 
 Se pueden aplicar varios filtros a la vez y el orden de los mismos no se tiene en cuenta.
 Si un filtro IP es 0.0.0.0, un filtro de puertos es 0, o un filtro ethernet es 00:00:00:00:00:00 se considerará inexistente, es decir, no se aplicará dicho filtro.
+
+\subsection{Organización de resultados}
+Los resultados del programa se oraganizan de la siguiente forma:
+\begin{itemize}
+\item En la carpeta \textbf{ECDFtamanyos} encontramos tanto el histograma como el ECDF de la variable \textit{tamaño de los paquetes leídos}.
+\item En la carpeta \textbf{throughput} encontramos archivos con el formato\\ T$\_$MACorigen$\_$MACdestino que contienen la representación del ancho de banda. En cada fila encontramos dos columnas: segundo y cantidad de bytes enviados durante ese segundo en el sentido MACorigen $\longrightarrow$ MACdestino.
+\item En la carpeta \textbf{flujos} tanto un ECDF como un histograma para cada par de puertos en cada sentido que analizan la variable \textit{tiempo de llegada entre paquetes}.
+\end{itemize}
+
+El histograma de la variable \textit{tamaño de los paquetes leídos} tiene dos columnas, la primera indica el tamaño de paquete y la segunda el número de paquetes enviados con ese tamaño.
+
+El histograma de la variable \textit{tiempo de llegada entre paquetes} tiene dos columnas, la primera indica el tiempo de llegada entre paquetes y la segunda el número de paquetes que han llegado en ese intervalo (aproximado a la cienmilésima).
 
 \end{document}
