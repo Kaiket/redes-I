@@ -38,7 +38,7 @@ Las funciones que realizará el programa son las siguientes:
 \item Almacene en fichero y calcule el ECDF de la variable \textit{tiempo entre llegadas de los paquetes de un flujo entre un par de puertos}.
 \end{itemize}
 
-Adicionalmente se calcularán histogramas de las variables en las que se pide calcular un ECDF, para así disponer de más información para analizar los datos.
+Adicionalmente se calcularán histogramas de las variables en las que se pide calcular un ECDF para así disponer de más información para analizar los datos.
 
 De forma particular, el análisis que se va a llevar a cabo consistirá en mostrar la funcionalidad de la herramienta sobre el fichero proporcionado con el enunciado de la práctica: \textit{$practica3\_ rc1lab.pcap$}
 
@@ -82,13 +82,73 @@ Como se puede observar, la popularidad en paquetes y en bytes no tiene por qué 
 \end{figure}
 
 \subsection{Tamaños de los paquetes}
-Para analizar la variable \textit{tamaño del paquete capturado} se han realizado un histograma y un ECDF de dicha variable sobre la traza. (Véase figura XXXXXXXXXXXXX).
+Para analizar la variable \textit{tamaño del paquete capturado} se han realizado un histograma (\textbf{Figura \ref{fig:tam_hist}}) y un ECDF (\textbf{Figura \ref{fig:tam_ecdf}}) de dicha variable sobre la traza.
 
-\subsection{Ancho de banda a nivel 2}
-Se analizará el ancho de banda a nivel 2 cada segundo por sentido asumiendo que la dirección Ethernet origen es \textit{00:55:22:af:c6:37} y descartando el tráfico broadcast.
+%Inclusion de imagen.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{tam_hist.png}
+\caption{Histograma de tamaños de paquetes.}
+\label{fig:tam_hist}
+\end{figure}
+
+En el histograma puede observarse que la mayoría de paquetes tienen un tamaño de 54, 218 o 1514 bytes.
+
+%Inclusion de imagen.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{tam_ecdf.png}
+\caption{ECDF de tamaños de paquetes.}
+\label{fig:tam_ecdf}
+\end{figure}
+
+El ECDF nos muestra una información similar, se puede comprobar que las subidas en el mismo corresponden con los tamaños 54, 218 y 1514 bytes vistos en el histograma.
+\\\\
+Este resultado se obtiene porque los paquetes de la traza corresponden a asentimientos, tráfico UDP y segmentos de datos.
+
+Los paquetes de 54 bytes se corresponden con asentimientos, que se utilizan para confirmar la recepción de un mensaje (dado que 54 bytes es el tamaño mínimo de una trama ethernet). Por otro lado, los paquetes de 218 bytes corresponden a paquetes de tráfico UDP de esta traza. Y finalmente, los paquetes de 1514 bytes son segmentos de datos, es decir, cuando se quiere enviar una cantidad de datos, se segmentan en varios paquetes ocupando varios de 1514 bytes (el tamaño máximo de una trama ethernet) y el resto de la información se colocará en un paquete del tamaño necesario.
+
+En conclusión, hay una cantidad considerable de paquetes que son asenimientos o tráfico UDP y la gran mayoría del resto de datos que se quieren enviar han sido fragmentados en paquetes de 1514 bytes y en paquetes de tamaño variable que contienen el resto de dicha fragmentación.
+
+\subsection{Ancho de banda a nivel 2 (Throughput)}
+Tras el ancho de banda a nivel 2 cada segundo por sentido asumiendo que la dirección Ethernet origen es \textit{00:55:22:af:c6:37} y descartando el tráfico broadcast obtenemos una figura con la representación del throughput (\textbf{Figura \ref{fig:throughput}})
+
+%Inclusion de imagen.
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{throughput.png}
+\caption{Ancho de banda cada segundo.}
+\label{fig:throughput}
+\end{figure}
+
+En la gráfica puede observarse que hay una base de tasa de envío de unos 10900 bytes cada segundo, que se corresponden a envíos constantes de paquetes UDP de 218 bytes cada 0,02 segundos aproximadamente ($\frac{218 B}{0,02 s} = 10900\ B/s$).
+\\\\
+El resto de los saltos de la gráfica pueden deberse a lo que se haya decidido enviar en cada momento, tanto segmentos de datos como asentimientos. El caudal de datos por segundo no sigue una distribución fija pues depende de los paquetes que se envían y del momento en el que se envían, sin embargo, ofrece una visión generalizada de la cantidad de información que se envía en cada momento, así como de las tasas constantes de envío, como en este caso el tráfico UDP.
 
 \subsection{Tiempo entre llegadas de paquetes de un flujo}
-Para analizar los tiempos entre llegadas de paquetes de un flujo, se asumirá el flujo UDP con puertos de origen y destino 24704 y 27088 respectivamente. Dicho análisis se llevará a cabo con la ayuda de Wireshark dado que la pila de protocolos usada no es Eth-IP, sino VLAN.
+Para analizar los tiempos entre llegadas de paquetes de un flujo, se asumirá el flujo UDP con puertos de origen y destino 24704 y 27088 respectivamente. Se obtienen en este caso el histograma (\textbf{Figura \ref{fig:flujo_hist}}) y el ECDF (\textbf{Figura \ref{fig:flujo_ecdf}}) correspondientes.
+
+%Inclusion de imagen.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{flujo_hist.png}
+\caption{Histograma del tiempo entre llegadas de paquetes del flujo.}
+\label{fig:flujo_hist}
+\end{figure}
+
+El histograma muestra como el tiempo de llegadas entre paquetes se concentra en 0,02 segundos.
+
+%Inclusion de imagen.
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{flujo_ecdf.png}
+\caption{ECDF del tiempo entre llegadas de paquetes del flujo.}
+\label{fig:flujo_ecdf}
+\end{figure}
+
+En el ECDF se observa como el salto en el valor 0,02 de los segundos es muy pronunciado, lo que indica una baja dispersión con respecto a este valor.
+
+En conclusión, en el flujo analizado, se obtiene un tiempo de llegadas entre paquetes centrado y muy próximo a 0,02 segundos en todos los casos, lo que podría atribuirse a una tasa de recibo muy constante y por tanto un Jitter bajo. En los casos en los el Jitter fuera alto, la tasa de recibo no sería constante, sino que sufriría altibajos y el tiempo entre llegadas de paquetes se dispersaría más de su media.
 
 %Apendice
 \clearpage
