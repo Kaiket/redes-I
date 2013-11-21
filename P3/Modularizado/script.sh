@@ -60,7 +60,7 @@
 #ECDF
         echo "Calculando ECDF de tamanyos de paquete"
         cut -f 3 $1 | awk '{data[$1]+=1} END {for (elem in data) {print elem, data[elem]}}' | sort -nk 1 > histTam
-        awk 'BEGIN {data[$1]=0; ant=$1; tot=0} {data[$1]=(data[ant]+$2); ant=$1; tot+=$2} END {for (elem in data) {print elem, data[elem]/tot}}' histTam | sort -nk 1 > ECDFTam
+        awk 'BEGIN {data[0]=0; ant=0; tot=0} {data[$1]=(data[ant]+$2); ant=$1; tot+=$2} END {for (elem in data) {print elem, data[elem]/tot}}' histTam | sort -nk 1 | sed '1d' > ECDFTam
         #creamos un carpeta si no existe, si existe borramos el contenido e introducimos los archivos generados
         if [ -d "ECDFTamanyos" ]; then
             if [ "$(ls -A ECDFTamanyos)" ]; then
@@ -94,7 +94,7 @@
         for i in flujo_* 
             do
                 awk '{n=sprintf("%.6f",$1); data[n]+=1} END {for (elem in data) {print elem, data[elem]}}' $i | sort -k 1n > $i"_hist"
-                awk 'BEGIN {data[$1]=0; ant=$1; tot=0} {data[$1]=(data[ant]+$2); ant=$1; tot+=$2} END {for (elem in data) {print elem, data[elem]/tot}}' $i"_hist" | sort -nk 1 > $i"_ECDF"                
+                awk 'BEGIN {data[0]=0; ant=0; tot=0} {data[$1]=(data[ant]+$2); ant=$1; tot+=$2} END {for (elem in data) {print elem, data[elem]/tot}}' $i"_hist" | sort -nk 1 | sed '1d' > $i"_ECDF"                
             done
         #creamos un carpeta si no existe, si existe borramos el contenido e introducimos los archivos generados
         if [ -d "flujos" ]; then
