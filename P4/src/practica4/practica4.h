@@ -57,25 +57,25 @@
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 
-typedef uint8_t (*pf_notificacion) (uint8_t* datos, uint16_t* pila_protocolos,uint64_t longitud,void *parametros);
+typedef uint8_t(*pf_notificacion) (uint8_t* datos, uint16_t* pila_protocolos, uint64_t longitud, void *parametros);
 pf_notificacion protocolos_registrados[MAX_PROTOCOL];
 
-typedef struct parametros{
-		uint8_t ETH_destino[ETH_ALEN];
-		uint8_t IP_destino[IP_ALEN];
-		uint16_t puerto_destino;
-		uint8_t tipo;
-		uint8_t codigo;
-}Parametros;
+typedef struct parametros {
+    uint8_t ETH_destino[ETH_ALEN];
+    uint8_t IP_destino[IP_ALEN];
+    uint16_t puerto_destino;
+    uint8_t tipo;
+    uint8_t codigo;
+} Parametros;
 
 /***************************Pila de protocolos a implementar*************************************/
-uint8_t moduloUDP(uint8_t* mensaje, uint16_t* pila_protocolos,uint64_t longitud,void *parametros);
-uint8_t moduloICMP(uint8_t* mensaje, uint16_t* pila_protocolos,uint64_t longitud,void *parametros);
-uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos,uint64_t longitud,void *parametros);
-uint8_t moduloETH(uint8_t* datagrama, uint16_t* pila_protocolos,uint64_t longitud,void *parametros);
+uint8_t moduloUDP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud, void *parametros);
+uint8_t moduloICMP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud, void *parametros);
+uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud, void *parametros);
+uint8_t moduloETH(uint8_t* datagrama, uint16_t* pila_protocolos, uint64_t longitud, void *parametros);
 
 /***************************Funcion enviar trafico implementadas*********************************/
-uint8_t enviar(uint8_t* mensaje, uint16_t* pila_protocolos,uint64_t longitud,void *parametros);
+uint8_t enviar(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud, void *parametros);
 
 /***************************Funciones inicializacion implementadas*******************************/
 uint8_t inicializarPilaEnviar();
