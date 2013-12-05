@@ -32,7 +32,8 @@
 
 #define IP_ALEN      4
 #define IP_DATAGRAM_MAX 65536 	// Tamano datagrama IP 
-#define IP_PROTO     0x0800	// Identificador protocolo UDP	
+#define IP_PROTO     0x0800	// Identificador protocolo UDP
+#define IP_HLEN      20         /* Tamaño de cabecera IP */
 
 #define UDP_HLEN 8	      	// Tamano de cabecera UDP	
 #define UDP_SEG_MAX 65536     	// Tamano segmento UDP
