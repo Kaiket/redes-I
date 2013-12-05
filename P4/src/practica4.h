@@ -90,5 +90,8 @@ void handleSignal(int nsignal);
 /***************************Funciones auxiliares a implementar*********************************/
 uint8_t aplicarMascara(uint8_t* IP, uint8_t* mascara, uint32_t longitud, uint8_t* resultado);
 
+/****************************************Funciones utiles**************************************/
+uint8_t fichero_a_string(char *string_dest, char *nombre_fichero, size_t tam);
+
 
 #endif

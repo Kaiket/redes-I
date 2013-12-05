@@ -15,6 +15,7 @@ pcap_dumper_t *pdumper; /* y salida a pcap */
 uint64_t cont = 0;      /* Contador numero de mensajes enviados */
 char *interface;        /* Interface donde transmitir por ejemplo "eth0" */
 uint16_t ID = 1;        /* Identificador IP */
+uint16_t MTU;
 
 void handleSignal(int nsignal) {
     printf("Control C pulsado (%" SCNd64 ")\n", cont);
@@ -29,7 +30,6 @@ int main(int argc, char **argv) {
     char errbuf[PCAP_ERRBUF_SIZE];
     char fichero_pcap_destino[CADENAS];
     uint8_t IP_destino_red[IP_ALEN];
-    uint16_t MTU;
     uint16_t datalink;
     uint16_t puerto_destino;
     char data[IP_DATAGRAM_MAX];
@@ -217,7 +217,8 @@ uint8_t moduloUDP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud
     pos += sizeof (uint16_t);
     
     /*el checksum no se calcula*/
-    memcpy(segmento + pos, 0x0, sizeof(uint16_t));
+    aux16=0;
+    memcpy(segmento + pos, &aux16, sizeof(uint16_t));
     pos += sizeof (uint16_t);
     
     /*copiamos el mensaje*/
@@ -267,10 +268,10 @@ uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud
     num_fragmentos = (uint16_t) ceil(((double) longitud) / (MTU - IP_HLEN));
     offset = (MTU - IP_HLEN);
 
-    datagrama[pos] = (0x4 << 8) | (IP_HLEN / 4);
-    pos += sizeof (unit8_t);
+    datagrama[pos] = (uint8_t)0x45;//(0x4 << 4) | (IP_HLEN / 4);
+    pos += sizeof (uint8_t);
     datagrama[pos] = 0x0;
-    pos += sizeof (unit8_t);
+    pos += sizeof (uint8_t);
     pos_inicial = pos;
     for (i = 0; i < num_fragmentos; i++) {
         pos = pos_inicial;
@@ -311,10 +312,10 @@ uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud
         memcpy(datagrama + pos, IP_origen, IP_ALEN * sizeof (uint8_t));
         pos += IP_ALEN * sizeof (uint8_t);
 
-        memcpy(datagrama + pos, ipdatos.IP_destino, IP_ALEN * sizeof (uint8_t))
+        memcpy(datagrama + pos, ipdatos.IP_destino, IP_ALEN * sizeof (uint8_t));
         pos += IP_ALEN * sizeof (uint8_t);
 
-        if (calculaChecksum(IP_HLEN, datagrama, &aux16) == ERROR) {
+        if (calcularChecksum(IP_HLEN, datagrama, &aux16) == ERROR) {
             return ERROR;
         }
         memcpy(checksumpos, &aux16, sizeof (uint16_t));
@@ -348,9 +349,10 @@ uint8_t moduloETH(uint8_t* datagrama, uint16_t* pila_protocolos, uint64_t longit
     uint8_t MAC[ETH_ALEN];    
     Parametros ethdatos = *((Parametros*) parametros);
     uint16_t pos = 0;
-    uint16_t protocolo_superior = pila_protocolos[1];
+    uint16_t protocolo_superior = pila_protocolos[0];
+    pila_protocolos++;
     uint16_t aux16;
-    pcap_pkthdr pkthdr;
+    struct pcap_pkthdr pkthdr;
     
     if(longitud > MTU){
         return ERROR;
@@ -386,7 +388,7 @@ uint8_t moduloETH(uint8_t* datagrama, uint16_t* pila_protocolos, uint64_t longit
     
     /* Almacenamos la salida por cuestiones de debugging a implementar. */
     pkthdr.len = longitud + ETH_HLEN;
-    pkthdr.caplen = longituf + ETH_HLEN;
+    pkthdr.caplen = longitud + ETH_HLEN;
     gettimeofday(&(pkthdr.ts), NULL);
     
     pcap_dump((u_char*) pdumper, &pkthdr, (u_char*) trama);

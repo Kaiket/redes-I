@@ -213,7 +213,7 @@ uint8_t obtenerGateway(char * interface, uint8_t* retorno) {
  * Descripcion: Devuelve un puerto origen disponible					*
  * Argumentos: 										*
  *  -puerto: puerto disponible en orden hardware						*
- * Retorno: OK==1/ERROR==0								*
+ * Retorno: OK==0/ERROR==1								*
  ****************************************************************************************/
 
 uint8_t obtenerPuertoOrigen(uint16_t* puerto) {
@@ -223,7 +223,7 @@ uint8_t obtenerPuertoOrigen(uint16_t* puerto) {
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock == -1) {
         perror("El socket no pudo ser creado !\n");
-        return 0;
+        return ERROR;
     }
     c = 1;
     setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *) &c, sizeof (c));
@@ -233,18 +233,18 @@ uint8_t obtenerPuertoOrigen(uint16_t* puerto) {
     sock_addr.sin_family = AF_INET;
     if (bind(sock, (struct sockaddr *) &sock_addr, sizeof (sock_addr)) == -1) {
         perror("El socket no pudo ser enlazado a un puerto libre !\n");
-        return 0;
+        return ERROR;
     }
     socklen_t addrlen = sizeof (sock_addr);
     if (getsockname(sock, (struct sockaddr *) &sock_addr, &addrlen) == 0)
         *puerto = ntohs(sock_addr.sin_port);
     else {
         *puerto = 0;
-        return 0;
+        return ERROR;
     }
     close(sock);
     sock = -1;
     printf("Retorno obtenerPuertoOrigen():\n");
     printf("\t%u\n", *puerto);
-    return 1;
+    return OK;
 }
