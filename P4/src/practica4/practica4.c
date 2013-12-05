@@ -47,12 +47,16 @@ int main(int argc, char **argv) {
             if (fgets(data, sizeof data, stdin) == NULL) {
                 printf("Error leyendo desde stdin: %s %s %d.\n", errbuf, 
                         __FILE__, __LINE__);
-                return ERROR;
+                exit(EXIT_FAILURE);
             }
             sprintf(fichero_pcap_destino, "%s%s", "stdin", ".pcap");
         } else {
             sprintf(fichero_pcap_destino, "%s%s", argv[4], ".pcap");
-            /* Leer fichero en data [...] */
+            if(fichero_a_string(data, argv[4], IP_DATAGRAM_MAX) == ERROR){
+                printf("Error leyendo desde fichero: %s %s %d.\n", argv[4], 
+                        __FILE__, __LINE__);
+                exit(EXIT_FAILURE);
+            }     
         }
     }
     else {
@@ -404,3 +408,33 @@ uint8_t registrarProtocolo(uint16_t protocolo, pf_notificacion handleModule,
 }
 
 
+uint8_t fichero_a_string(char *string_dest, char *nombre_fichero, size_t tam){
+
+    FILE *f;
+    char lectura[tam];
+    uint32_t offset = 0;
+
+    /*Control de errores*/
+    if (!string_dest || !nombre_fichero) {
+        return ERROR;
+    }
+
+    /*Apertura del fichero en modo lectura*/
+    if ((f = fopen(nombre_fichero, "r")) == NULL) {
+        return ERROR;
+    }
+
+    /*Lectura del fichero*/
+    while (fgets(lectura, tam, f) != NULL) {
+        /*Se almacena un maximo de tam*/
+        if (strlen(lectura) + offset > tam) {
+            strncpy(string_dest + offset, lectura, tam - offset);
+            return OK;
+        }
+        strncpy(string_dest + offset, lectura, strlen(lectura));
+        offset += strlen(lectura);
+    }
+
+    return OK;
+    
+}
