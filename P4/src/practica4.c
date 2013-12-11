@@ -32,7 +32,9 @@ int main(int argc, char **argv) {
     uint16_t puerto_destino;
     char data[IP_DATAGRAM_MAX]={0};
     uint16_t pila_protocolos[CADENAS];
+    
     int i;
+    struct timeval *inicio, *fin;
 
     /* Proceso de argumentos */
     /* Dos opciones: leer de stdin o de fichero, adicionalmente para pruebas 
@@ -134,13 +136,18 @@ int main(int argc, char **argv) {
     parametros_icmp.tipo = PING_TIPO;
     parametros_icmp.codigo = PING_CODE;
     memcpy(parametros_icmp.IP_destino, IP_destino_red, IP_ALEN);
+    /*inicializamos el tiempo (para calcular cuanto tarda la respuesta al ping)*/
+//    gettimeofday(inicio, NULL);
     if (enviar((uint8_t*) "Probando a hacer un ping", pila_protocolos, strlen("Probando a hacer un ping"), &parametros_icmp) == ERROR) {
         printf("Error: enviar(): %s %s %d.\n", errbuf, __FILE__, __LINE__);
         cerrarArchivos();
         return ERROR;
     } else cont++;
     printf("Enviado mensaje %lld, ICMP almacenado en %s\n\n", cont, fichero_pcap_destino);
-
+//    /*esperamos la respuesta al ping*/
+//    while (pcap_next()) {
+//        
+//    }
     /*Cerramos descriptores*/
     cerrarArchivos();
     return OK;
@@ -186,7 +193,7 @@ uint8_t enviar(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud, v
 uint8_t moduloUDP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud, void *parametros) {
     uint8_t segmento[UDP_SEG_MAX] = {0};
     uint16_t puerto_origen, suma_control = 0;
-    uint16_t aux16;
+    uint16_t aux16, *checksumpos, checksum;
     uint32_t pos = 0;
     uint16_t protocolo_inferior = pila_protocolos[1];
     printf("moduloUDP(%u) %s %d.\n", protocolo_inferior, __FILE__, __LINE__);
@@ -219,12 +226,19 @@ uint8_t moduloUDP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud
     pos += sizeof (uint16_t);
     
     /*el checksum no se calcula*/
+    checksumpos=segmento+pos;
     aux16=0;
     memcpy(segmento + pos, &aux16, sizeof(uint16_t));
     pos += sizeof (uint16_t);
     Parametros ethdatos = *((Parametros*) parametros);
     /*copiamos el mensaje*/
     memcpy(segmento + pos, mensaje, longitud*sizeof(uint8_t));
+    
+    /*calculamos el checksum UDP*/
+    if (checksumUDP(segmento, (Parametros*)parametros, &checksum)==OK) {
+        memcpy(checksumpos, &checksum, sizeof(uint16_t));
+    }
+    
     
     //Se llama al protocolo definido de nivel inferior a traves de los punteros registrados en la tabla de protocolos registrados
     return protocolos_registrados[protocolo_inferior](segmento, pila_protocolos, longitud + pos, parametros);
@@ -290,13 +304,11 @@ uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud
     
     for (i=0; i<IP_ALEN; i++) {
         if (IP_rango_destino[i]!=IP_rango_origen[i]) { /*no pertenecen a la misma subred*/
-            printf("No pertenecen a la misma subred\n");
             obtenerGateway(interface, IP_ARP);
             break;
         }
     }
     if (i==IP_ALEN) { /*pertenecen a la misma subred*/
-        printf("Pertenece a la misma subred\n");
         for (i=0; i<IP_ALEN; i++) IP_ARP[i]=ipdatos->IP_destino[i];
     }
     
@@ -663,4 +675,37 @@ void cerrarArchivos() {
     pcap_dump_close(pdumper);
     pcap_close(descr2);
     return;
+}
+
+uint8_t checksumUDP(uint8_t *segmentoUDP, Parametros *parametros, uint16_t *checksum){
+
+    uint8_t pseudoCabecera[12+UDP_SEG_MAX]={0};
+    uint8_t IP_origen[IP_ALEN];
+    uint16_t longitud;
+    uint8_t pos = 0;
+
+    if(obtenerIPInterface(interface, IP_origen) == ERROR){
+	return ERROR;
+    }
+
+    memcpy(pseudoCabecera, IP_origen, IP_ALEN*sizeof(uint8_t));
+    pos += IP_ALEN*sizeof(uint8_t);
+
+    memcpy(pseudoCabecera + pos, parametros->IP_destino, IP_ALEN*sizeof(uint8_t));
+    pos += IP_ALEN*sizeof(uint8_t);
+
+    pseudoCabecera[pos] = 0;
+    pos += sizeof(uint8_t);
+
+    pseudoCabecera[pos] = UDP_PROTO;
+    pos += sizeof(uint8_t);
+
+    longitud = ntohs(*((uint16_t*)(segmentoUDP+4)));
+    memcpy(pseudoCabecera + pos, segmentoUDP+4, sizeof(uint16_t));
+    pos += sizeof(uint16_t);
+
+    memcpy(pseudoCabecera + pos, segmentoUDP, longitud);
+
+    return calcularChecksum(12+longitud, pseudoCabecera, checksum);    
+
 }
