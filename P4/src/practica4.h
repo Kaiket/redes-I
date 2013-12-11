@@ -42,6 +42,7 @@
 #define ICMP_PROTO 1
 #define ICMP_HLEN 8
 #define ICMP_DATAG_MAX 40
+#define ICMP_SEG_MAX 65536
 
 #define PING_TIPO 8
 #define PING_CODE 0
@@ -49,9 +50,6 @@
 #define CADENAS 256
 
 #define MAX_PROTOCOL 65536
-
-#define OK 0
-#define ERROR 1
 
 #define OK 0
 #define ERROR 1
@@ -92,6 +90,6 @@ uint8_t aplicarMascara(uint8_t* IP, uint8_t* mascara, uint32_t longitud, uint8_t
 
 /****************************************Funciones utiles**************************************/
 uint8_t fichero_a_string(char *string_dest, char *nombre_fichero, size_t tam);
-
+void cerrarArchivos();
 
 #endif
