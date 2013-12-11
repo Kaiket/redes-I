@@ -222,7 +222,7 @@ uint8_t moduloUDP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud
     aux16=0;
     memcpy(segmento + pos, &aux16, sizeof(uint16_t));
     pos += sizeof (uint16_t);
-    
+    Parametros ethdatos = *((Parametros*) parametros);
     /*copiamos el mensaje*/
     memcpy(segmento + pos, mensaje, longitud*sizeof(uint8_t));
     
@@ -258,8 +258,8 @@ uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud
 
     printf("moduloIP(%u) %s %d.\n", protocolo_inferior, __FILE__, __LINE__);
 
-    Parametros ipdatos = *((Parametros*) parametros);
-    uint8_t* IP_destino = ipdatos.IP_destino;
+    Parametros *ipdatos = ((Parametros*) parametros);
+    uint8_t* IP_destino = ipdatos->IP_destino;
     
     if (longitud + IP_HLEN > pow(2, 16) + 1) {
         printf("Error: tamano demasiado grande para IP.\n");
@@ -285,7 +285,7 @@ uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud
         return ERROR;
     }
     
-    aplicarMascara(ipdatos.IP_destino, mascara, IP_ALEN, IP_rango_destino);
+    aplicarMascara(ipdatos->IP_destino, mascara, IP_ALEN, IP_rango_destino);
     aplicarMascara(IP_origen, mascara, IP_ALEN, IP_rango_origen);
     
     for (i=0; i<IP_ALEN; i++) {
@@ -297,15 +297,15 @@ uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud
     }
     if (i==IP_ALEN) { /*pertenecen a la misma subred*/
         printf("Pertenece a la misma subred\n");
-        for (i=0; i<IP_ALEN; i++) IP_ARP[i]=ipdatos.IP_destino[i];
+        for (i=0; i<IP_ALEN; i++) IP_ARP[i]=ipdatos->IP_destino[i];
     }
     
     /*comprobamos la direccion ethernet destino de los parametros y si no ha sido inicializada, hacemos un ARP*/
     for (i=0;i<ETH_ALEN;i++) {
-        if (ipdatos.ETH_destino[i]!=0) break;
+        if (ipdatos->ETH_destino[i]!=0) break;
     }    
     if (i==ETH_ALEN) {
-        if(ARPrequest(interface, IP_ARP, ipdatos.ETH_destino) == ERROR){
+        if(ARPrequest(interface, IP_ARP, ipdatos->ETH_destino) == ERROR){
                 return ERROR;
         }
     }
@@ -355,7 +355,7 @@ uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud
         pos += IP_ALEN * sizeof (uint8_t);
 
         /*IP destino*/
-        memcpy(datagrama + pos, ipdatos.IP_destino, IP_ALEN * sizeof (uint8_t));
+        memcpy(datagrama + pos, ipdatos->IP_destino, IP_ALEN * sizeof (uint8_t));
         pos += IP_ALEN * sizeof (uint8_t);
 
         if (calcularChecksum(IP_HLEN, datagrama, &aux16) == ERROR) {
@@ -408,8 +408,6 @@ uint8_t moduloETH(uint8_t* datagrama, uint16_t* pila_protocolos, uint64_t longit
     
     printf("moduloETH(fisica) %s %d.\n", __FILE__, __LINE__);
     uint8_t trama[ETH_FRAME_MAX] = {0};
-    
-    printf("%02x:%02x:%02x:%02x:%02x:%02x:",ethdatos.ETH_destino[0],ethdatos.ETH_destino[1],ethdatos.ETH_destino[2],ethdatos.ETH_destino[3],ethdatos.ETH_destino[4],ethdatos.ETH_destino[5]);
     
     /*copiamos MAC destino*/
     memcpy(trama + pos, ethdatos.ETH_destino, ETH_ALEN*sizeof(uint8_t));
@@ -480,11 +478,11 @@ uint8_t moduloICMP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitu
     memcpy(segmento + pos, &aux16, sizeof(uint16_t));
     pos+=sizeof(uint16_t);
     /*Identificador*/
-    aux16=htons(27);
+    aux16=htons(getpid());
     memcpy(segmento + pos, &aux16, sizeof(uint16_t));
     pos+=sizeof(uint16_t);
     /*Numero de Secuencia*/
-    aux16=htons(9);
+    aux16=htons(0);
     memcpy(segmento + pos, &aux16, sizeof(uint16_t));
     pos+=sizeof(uint16_t);
     /*copiamos el mensaje*/
