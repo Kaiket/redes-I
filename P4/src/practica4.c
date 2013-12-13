@@ -12,38 +12,28 @@ Inicio, funciones auxiliares y modulos de transmision de la practica4
 /* Variables globales utiles */
 pcap_t *descr, *descr2; /* Descriptores de la interface de red */
 pcap_dumper_t *pdumper; /* y salida a pcap */
-uint64_t cont = 0; /* Contador numero de mensajes enviados */
-char *interface; /* Interface donde transmitir por ejemplo "eth0" */
-uint16_t ID = 1; /* Identificador IP */
-uint16_t MTU;
+uint64_t cont = 0;      /* Contador numero de mensajes enviados */
+char *interface;        /* Interface donde transmitir por ejemplo "eth0" */
+uint16_t ID = 1;        /* Identificador IP */
+uint16_t MTU;           /* MTU obtenida */
 
-void handleSignal(int nsignal) {
-    if (nsignal==SIGINT) {
-        printf("Control C pulsado (%" SCNd64 ")\n", cont);
-    }
-    else if (nsignal==SIGALRM) {
-        printf("No recibida respuesta al ping en 1 segundo.\n");
-    }
-    cerrarArchivos();
-    exit(EXIT_SUCCESS);
-}
 
 int main(int argc, char **argv) {
 
-    char errbuf[PCAP_ERRBUF_SIZE];
-    char fichero_pcap_destino[CADENAS];
-    uint8_t IP_destino_red[IP_ALEN];
-    uint16_t datalink;
-    uint16_t puerto_destino;
-    char data[IP_DATAGRAM_MAX] = {0};
-    uint16_t pila_protocolos[CADENAS];
+    char errbuf[PCAP_ERRBUF_SIZE];              /* Buffer de error pcap */
+    char fichero_pcap_destino[CADENAS];         /* Fichero donde guardar la traza */
+    uint8_t IP_destino_red[IP_ALEN];            /* IP destino */
+    uint16_t datalink;                          /* Enlace de datos */
+    uint16_t puerto_destino;                    /* Puerto destino*/
+    char data[IP_DATAGRAM_MAX] = {0};           /* Datos a enviar */
+    uint16_t pila_protocolos[CADENAS];          /* Pila de protocolos */
 
-    int i;
-    struct timeval inicio, fin;
-    struct pcap_pkthdr pkthdr;
-    u_char *paquete;
-    uint16_t aux16;
-    pid_t pid = getpid();
+    int i;                                      
+    struct timeval inicio, fin;                 /* Contadores de tiempo */
+    struct pcap_pkthdr pkthdr;                  /* Cabecera de paquete pcap */
+    u_char *paquete;                            /* Paquete leido */
+    uint16_t aux16;                             /* Auxiliar para copia y asignacion*/
+    pid_t pid = getpid();                       /* PID del proceso actual */
 
     /* Proceso de argumentos */
     /* Dos opciones: leer de stdin o de fichero, adicionalmente para pruebas 
@@ -151,24 +141,33 @@ int main(int argc, char **argv) {
         return ERROR;
     } else cont++;
     printf("Enviado mensaje %lld, ICMP almacenado en %s\n\n", cont, fichero_pcap_destino);
-    /*inicializamos el tiempo (para calcular cuanto tarda la respuesta al ping)*/
+    /*Inicializamos el tiempo (para calcular cuanto tarda la respuesta al ping)*/
     /*Esperamos la respuesta al ping*/
     /* Captura de señal SIGINT */
     if (signal(SIGALRM, handleSignal) == SIG_ERR) {
         printf("Error: Fallo al capturar la senal SIGINT.\n");
         return ERROR;
     }
+    
+    /* Se espera como máximo 1 segundo para recibir el ping */
     alarm(1);
     gettimeofday(&inicio, NULL);
+    /* Lectura de paquetes */
     while ((paquete = pcap_next(descr, &pkthdr)) != NULL) {
         aux16 = ntohs(*((uint16_t*) (paquete + 12)));
+        /* Comprobacion IP */
         if (aux16 == IP_PROTO) {
+            /* Comprobacion ICMP */
             if (paquete[ETH_HLEN + 9] == ICMP_PROTO) {
+                /* Comprobacion tipo reply*/
                 if (paquete[ETH_HLEN + IP_HLEN] != REPLY_TIPO) continue;
+                /* Comprobacion codigo de ping */
                 if (paquete[ETH_HLEN + IP_HLEN + 1] != PING_CODE) continue;
                 aux16 = ntohs(*((uint16_t*) (paquete + ETH_HLEN + IP_HLEN + 4)));
+                /* Comprobacion identificador */
                 if (aux16 != getpid()) continue;
                 aux16 = ntohs(*((uint16_t*) (paquete + ETH_HLEN + IP_HLEN + 6)));
+                /* Comprobacion secuencia */
                 if (aux16 == 0) {
                     alarm(0);
                     printf("Recibida respuesta a ping en %d us\n", pkthdr.ts.tv_usec - inicio.tv_usec);
@@ -181,6 +180,24 @@ int main(int argc, char **argv) {
     cerrarArchivos();
     return OK;
 }
+
+/****************************************************************************************
+ * Nombre: handleSignal									*
+ * Descripcion:	Funcion manejadora de señales           				*
+ * Argumentos: 										*
+ *  -nsignal: numero de señal capturada							*
+ ****************************************************************************************/
+void handleSignal(int nsignal) {
+    if (nsignal==SIGINT) {
+        printf("Control C pulsado (%" SCNd64 ")\n", cont);
+    }
+    else if (nsignal==SIGALRM) {
+        printf("No recibida respuesta al ping en 1 segundo.\n");
+    }
+    cerrarArchivos();
+    exit(EXIT_SUCCESS);
+}
+
 
 /****************************************************************************************
  * Nombre: enviar 									*
@@ -218,7 +235,6 @@ uint8_t enviar(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud, v
  *  -parametros: Parametros necesario para el envio este protocolo			*
  * Retorno: OK/ERROR									*
  ****************************************************************************************/
-
 uint8_t moduloUDP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud, void *parametros) {
     uint8_t segmento[UDP_SEG_MAX] = {0};
     uint16_t puerto_origen, suma_control = 0;
@@ -283,7 +299,6 @@ uint8_t moduloUDP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud
  *  -parametros: Parametros necesario para el envio este protocolo			*
  * Retorno: OK/ERROR									*
  ****************************************************************************************/
-
 uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud, void *parametros) {
     int i;
     uint16_t flags = 0;
@@ -432,7 +447,6 @@ uint8_t moduloIP(uint8_t* segmento, uint16_t* pila_protocolos, uint64_t longitud
  *  -parametros: Parametros necesario para el envio este protocolo			*
  * Retorno: OK/ERROR									*
  ****************************************************************************************/
-
 uint8_t moduloETH(uint8_t* datagrama, uint16_t* pila_protocolos, uint64_t longitud, void *parametros) {
 
     uint8_t MAC[ETH_ALEN];
@@ -494,7 +508,6 @@ uint8_t moduloETH(uint8_t* datagrama, uint16_t* pila_protocolos, uint64_t longit
  *  -parametros: Parametros necesario para el envio este protocolo			*
  * Retorno: OK/ERROR									*
  ****************************************************************************************/
-
 uint8_t moduloICMP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitud, void *parametros) {
     uint8_t segmento[ICMP_SEG_MAX] = {0}, *checksumpos = NULL;
     uint16_t suma_control = 0;
@@ -553,7 +566,6 @@ uint8_t moduloICMP(uint8_t* mensaje, uint16_t* pila_protocolos, uint64_t longitu
  *  -resultado: Resultados de aplicar mascara en IP en orden red			*
  * Retorno: OK/ERROR									*
  ****************************************************************************************/
-
 uint8_t aplicarMascara(uint8_t* IP, uint8_t* mascara, uint32_t longitud, uint8_t* resultado) {
     int i;
 
@@ -575,7 +587,6 @@ uint8_t aplicarMascara(uint8_t* IP, uint8_t* mascara, uint32_t longitud, uint8_t
  *  -longitud: Bytes que componen el mensaje						*
  * Retorno: OK/ERROR									*
  ****************************************************************************************/
-
 uint8_t mostrarPaquete(uint8_t * paquete, uint32_t longitud) {
     uint32_t i;
     printf("Paquete:\n");
@@ -595,7 +606,6 @@ uint8_t mostrarPaquete(uint8_t * paquete, uint32_t longitud) {
  *   -checksum - checksum de los datos (2 bytes) en orden de red  			*
  * Retorno: OK/ERROR									*
  ****************************************************************************************/
-
 uint8_t calcularChecksum(uint16_t longitud, uint8_t *datos, uint8_t *checksum) {
     uint16_t word16;
     uint32_t sum = 0;
@@ -651,7 +661,6 @@ uint8_t inicializarPilaEnviar() {
  *  -protocolos_registrados: vector de funciones registradas 				
  * Retorno: OK/ERROR 									
  */
-
 uint8_t registrarProtocolo(uint16_t protocolo, pf_notificacion handleModule,
         pf_notificacion* protocolos_registrados) {
 
@@ -666,6 +675,17 @@ uint8_t registrarProtocolo(uint16_t protocolo, pf_notificacion handleModule,
     return OK;
 }
 
+
+/*
+ * Nombre: fichero_a_string
+ * Descripcion: Copia el contenido de un fichero a una cadena
+ * Argumentos:
+ *      -string_dest: cadena destino
+ *      -nombre_fichero: nombre del fichero
+ *      -tam: cantidad a copiar
+ * Retorno:
+ *      OK/ERROR
+ */
 uint8_t fichero_a_string(char *string_dest, char *nombre_fichero, size_t tam) {
 
     FILE *f;
@@ -699,6 +719,10 @@ uint8_t fichero_a_string(char *string_dest, char *nombre_fichero, size_t tam) {
 
 }
 
+/*
+ * Nombre: cerrarArchivos
+ * Descripcion: Cierra los archivos abiertos
+ */
 void cerrarArchivos() {
     pcap_close(descr);
     pcap_dump_close(pdumper);
@@ -706,6 +730,15 @@ void cerrarArchivos() {
     return;
 }
 
+
+/*
+ * Nombre: checksumUDP
+ * Descripcion: calcula el checksum de la cabecera UDP
+ * Argumentos:
+ *      -segmentoUDP: Segmento UDP
+ *      -parametros: Informacion de envio
+ *      -checksum: puntero que almacenará el resultado
+ */
 uint8_t checksumUDP(uint8_t *segmentoUDP, Parametros *parametros, uint16_t *checksum) {
 
     uint8_t pseudoCabecera[12 + UDP_SEG_MAX] = {0};
