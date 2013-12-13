@@ -18,7 +18,12 @@ uint16_t ID = 1; /* Identificador IP */
 uint16_t MTU;
 
 void handleSignal(int nsignal) {
-    printf("Control C pulsado (%" SCNd64 ")\n", cont);
+    if (nsignal==SIGINT) {
+        printf("Control C pulsado (%" SCNd64 ")\n", cont);
+    }
+    else if (nsignal==SIGALRM) {
+        printf("No recibida respuesta al ping en 1 segundo.\n");
+    }
     cerrarArchivos();
     exit(EXIT_SUCCESS);
 }
@@ -148,17 +153,24 @@ int main(int argc, char **argv) {
     printf("Enviado mensaje %lld, ICMP almacenado en %s\n\n", cont, fichero_pcap_destino);
     /*inicializamos el tiempo (para calcular cuanto tarda la respuesta al ping)*/
     /*Esperamos la respuesta al ping*/
+    /* Captura de señal SIGINT */
+    if (signal(SIGALRM, handleSignal) == SIG_ERR) {
+        printf("Error: Fallo al capturar la senal SIGINT.\n");
+        return ERROR;
+    }
+    alarm(1);
     gettimeofday(&inicio, NULL);
     while ((paquete = pcap_next(descr, &pkthdr)) != NULL) {
         aux16 = ntohs(*((uint16_t*) (paquete + 12)));
         if (aux16 == IP_PROTO) {
             if (paquete[ETH_HLEN + 9] == ICMP_PROTO) {
-                if (paquete[ETH_HLEN + IP_HLEN] != 0) continue;
+                if (paquete[ETH_HLEN + IP_HLEN] != REPLY_TIPO) continue;
                 if (paquete[ETH_HLEN + IP_HLEN + 1] != PING_CODE) continue;
                 aux16 = ntohs(*((uint16_t*) (paquete + ETH_HLEN + IP_HLEN + 4)));
                 if (aux16 != getpid()) continue;
                 aux16 = ntohs(*((uint16_t*) (paquete + ETH_HLEN + IP_HLEN + 6)));
                 if (aux16 == 0) {
+                    alarm(0);
                     printf("Recibida respuesta a ping en %d us\n", pkthdr.ts.tv_usec - inicio.tv_usec);
                     break;
                 }

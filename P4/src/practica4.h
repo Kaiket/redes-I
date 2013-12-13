@@ -46,6 +46,7 @@
 
 #define PING_TIPO 8
 #define PING_CODE 0
+#define REPLY_TIPO 0
 
 #define CADENAS 256
 
@@ -91,5 +92,6 @@ uint8_t aplicarMascara(uint8_t* IP, uint8_t* mascara, uint32_t longitud, uint8_t
 /****************************************Funciones utiles**************************************/
 uint8_t fichero_a_string(char *string_dest, char *nombre_fichero, size_t tam);
 void cerrarArchivos();
+uint8_t checksumUDP(uint8_t *segmentoUDP, Parametros *parametros, uint16_t *checksum);
 
 #endif
