@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ $# -ne 3 ]
+then
+	echo $0 [num_chars] [char] [output_file_name]
+	exit
+fi
+
+if [ -f $3 ]
+then
+	while true
+	do
+		read -p "El archivo $3 ya existe. ¿Sobreescribir? [S/n]: " -n 1 REPLY
+		if [ -z $REPLY ] || [[ $REPLY = [Ss] ]]
+		then
+			rm $3
+			break
+		elif [[ $REPLY = [Nn] ]]
+		then	
+			echo
+			echo Cancelado
+			exit
+		else
+			echo
+			echo Respuesta no valida
+		fi
+	done	
+fi
+
+for i in `seq $1`
+do
+	echo -n $2 >> $3
+done
+
+echo Archivo $3 creado con $1 $2"'"s
