@@ -82,7 +82,7 @@ uint8_t inicializarPilaEnviar();
 uint8_t registrarProtocolo(uint16_t protocolo, pf_notificacion handleModule, pf_notificacion* protocolos_registrados);
 
 /***************************Funciones auxiliares implementadas***********************************/
-uint8_t calcularChecksum(uint16_t longitud, uint8_t *datos, uint8_t *checksum);
+uint8_t calcularChecksum(uint32_t longitud, uint8_t *datos, uint8_t *checksum);
 uint8_t mostrarPaquete(uint8_t * paquete, uint32_t longitud);
 void handleSignal(int nsignal);
 
